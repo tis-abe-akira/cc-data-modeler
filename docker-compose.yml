@@ -13,8 +13,8 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./artifacts/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
-      - ./artifacts/sample_data_relative.sql:/docker-entrypoint-initdb.d/02-sample_data.sql
+      - ./artifacts/project-record-system/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./artifacts/project-record-system/sample_data_relative.sql:/docker-entrypoint-initdb.d/02-sample_data.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U datamodeler -d immutable_model_db"]
       interval: 5s

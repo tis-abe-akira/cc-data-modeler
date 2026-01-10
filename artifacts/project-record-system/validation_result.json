@@ -1,0 +1,112 @@
+{
+  "is_valid": true,
+  "validation_date": "2026-01-10",
+  "total_entities": 21,
+  "total_relationships": 31,
+  "errors": [],
+  "warnings": [
+    {
+      "category": "naming",
+      "entity": "ProjectDevelopmentType",
+      "message": "交差テーブルの命名：複合語が長くなっています。略称の検討も可能です（例: PROJECT_DEV_TYPE）"
+    },
+    {
+      "category": "attribute",
+      "entity": "RiskEvaluate",
+      "attribute": "IsSystemProposed",
+      "message": "BOOLEANフラグ：NULLの扱いを明確にしてください。デフォルト値の設定を推奨します"
+    },
+    {
+      "category": "attribute",
+      "entity": "RiskEvaluate",
+      "attribute": "IsManualAdjusted",
+      "message": "BOOLEANフラグ：NULLの扱いを明確にしてください。デフォルト値の設定を推奨します"
+    }
+  ],
+  "suggestions": [
+    {
+      "category": "performance",
+      "message": "イベントテーブルのパフォーマンス最適化：日時カラムにインデックスを作成することを推奨します（全イベントテーブル）"
+    },
+    {
+      "category": "design",
+      "message": "PersonAssignとPersonReplaceを統合して「PersonAssignmentChange」イベントにすることも検討できます（履歴の一元管理）"
+    },
+    {
+      "category": "extension",
+      "message": "将来的なアクセス制御実装のために、UserとOrganization/Roleの関連を定義することを推奨します"
+    },
+    {
+      "category": "data_quality",
+      "message": "CreatedAtフィールドにDEFAULT CURRENT_TIMESTAMPを設定して、自動記録を実現することを推奨します"
+    }
+  ],
+  "validation_details": {
+    "immutable_model_compliance": {
+      "events_with_single_datetime": {
+        "status": "pass",
+        "count": 7,
+        "details": "すべてのイベントが1つの日時属性を持っています"
+      },
+      "events_naming_convention": {
+        "status": "pass",
+        "details": "イベント名は適切な形式（動詞+名詞）になっています"
+      },
+      "resources_without_update_timestamp": {
+        "status": "pass",
+        "details": "リソースに不要な更新日時属性はありません（CreatedAtのみ）"
+      },
+      "many_to_many_resolved": {
+        "status": "pass",
+        "count": 5,
+        "details": "すべての多対多関係が交差テーブルまたはイベント経由で解消されています"
+      }
+    },
+    "naming_rules_compliance": {
+      "entity_names": {
+        "status": "pass",
+        "details": "すべてのエンティティ名がPascalCase、単数形です"
+      },
+      "primary_keys": {
+        "status": "pass",
+        "details": "主キーは{EntityName}ID形式に準拠しています"
+      },
+      "foreign_keys": {
+        "status": "pass",
+        "details": "外部キーは参照先の主キー名と一致しています"
+      }
+    },
+    "relationship_integrity": {
+      "foreign_key_constraints": {
+        "status": "pass",
+        "count": 31,
+        "details": "すべての関連に適切な外部キー制約が定義されています"
+      },
+      "junction_tables": {
+        "status": "pass",
+        "count": 3,
+        "details": "タグ方式の交差テーブルが適切に設計されています"
+      },
+      "event_based_relationships": {
+        "status": "pass",
+        "count": 2,
+        "details": "OrganizationJoinとPersonAssignが多対多関係を履歴として記録しています"
+      },
+      "self_referencing": {
+        "status": "pass",
+        "count": 1,
+        "details": "Organizationの階層構造が自己参照で適切に表現されています"
+      }
+    }
+  },
+  "strengths": [
+    "イベント経由の多対多関係により、完全な履歴追跡が可能",
+    "タグ方式（交差テーブル）により柔軟な分析とクエリが可能",
+    "イミュータブルデータモデルの原則を完全に準拠",
+    "将来の拡張性（SupportTypeの追加など）を考慮した設計",
+    "命名規則が一貫しており、可読性が高い",
+    "リソースとイベントの分類が明確",
+    "複雑なビジネスロジック（担当者交代、組織参画など）を適切にモデル化"
+  ],
+  "summary": "プロジェクト実績管理システムのデータモデルは、イミュータブルデータモデルの原則に完全に準拠しており、実用的で拡張性の高い設計になっています。リソース11個、イベント7個、交差テーブル3個で構成され、31個の関連が適切に定義されています。履歴の完全な追跡、タグ方式による柔軟な分析、将来の拡張性を備えた優れたモデルです。"
+}

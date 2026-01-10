@@ -1,0 +1,81 @@
+{
+  "noun_candidates": [
+    {
+      "japanese": "プロジェクト",
+      "english": "Project",
+      "note": "システム開発プロジェクト。継続的に管理される開発案件"
+    },
+    {
+      "japanese": "人",
+      "english": "Person",
+      "note": "従業員。PM、PL、オーナー、メンバー、支援担当者などの役割を持つ"
+    },
+    {
+      "japanese": "組織",
+      "english": "Organization",
+      "note": "部門、事業部。プロジェクトに参画する組織単位"
+    },
+    {
+      "japanese": "顧客",
+      "english": "Customer",
+      "note": "プロジェクトの発注元企業"
+    },
+    {
+      "japanese": "業界",
+      "english": "Industry",
+      "note": "顧客の属する業界"
+    },
+    {
+      "japanese": "役割",
+      "english": "Role",
+      "note": "プロジェクトにおける役割（オーナー、PM、PL、メンバー）"
+    },
+    {
+      "japanese": "支援タイプ",
+      "english": "SupportType",
+      "note": "支援の種類（AI活用支援、セキュリティチェックなど）。将来的に拡張可能"
+    },
+    {
+      "japanese": "ユーザー",
+      "english": "User",
+      "note": "システム利用者。アクセス制御の主体"
+    }
+  ],
+  "verb_candidates": [
+    {
+      "japanese": "開始する",
+      "english": "start",
+      "note": "プロジェクトが発足する行為"
+    },
+    {
+      "japanese": "参画する",
+      "english": "join",
+      "note": "組織がプロジェクトに参画する行為"
+    },
+    {
+      "japanese": "アサインする",
+      "english": "assign",
+      "note": "担当者をプロジェクトにアサインする行為"
+    },
+    {
+      "japanese": "交代する",
+      "english": "replace",
+      "note": "担当者が交代する行為"
+    },
+    {
+      "japanese": "評価する",
+      "english": "evaluate",
+      "note": "リスクランクを評価する行為"
+    },
+    {
+      "japanese": "支援する",
+      "english": "support",
+      "note": "専門家が支援を実施する行為"
+    },
+    {
+      "japanese": "完了する",
+      "english": "complete",
+      "note": "プロジェクトが完了する行為"
+    }
+  ]
+}

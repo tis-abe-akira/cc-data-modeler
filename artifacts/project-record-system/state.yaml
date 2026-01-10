@@ -1,0 +1,11 @@
+project_name: project-record-system
+current_phase: completed
+input_usecase: "project-record-system-usecase.md"
+input_usecase_path: "/Users/akiraabe/practice/cc-data-modeler/project-record-system-usecase.md"
+completed_phases:
+  - entity_extraction
+  - classification
+  - attribute_review
+  - relationship_analysis
+  - validation
+  - diagram_generation
