@@ -24,7 +24,7 @@ tags:
 ```
 ┌─────────────────────────────────────────┐
 │   Blackboard (共有データ空間)            │
-│   /tmp/data-modeler-blackboard/        │
+│   artifacts/{project_name}/            │
 ├─────────────────────────────────────────┤
 │ ├── state.yaml                         │ ← フェーズ管理・制御情報
 │ ├── entities_raw.json                  │ ← 抽出された名詞・動詞
@@ -53,6 +53,27 @@ tags:
 - **フェーズ間の連携**: 前フェーズの出力が次フェーズの入力になる
 - **状態管理**: 現在のフェーズ、完了済みフェーズを記録
 - **検証可能性**: 各段階の成果物を後から確認できる
+- **プロジェクト分離**: 複数のモデリングプロジェクトを並行管理可能
+
+**プロジェクト名によるディレクトリ分離:**
+
+各モデリングプロジェクトは独立したディレクトリで管理されます。
+
+```
+artifacts/
+  ├── invoice-management/      ← 請求書管理システム
+  │   ├── state.yaml
+  │   ├── entities_classified.json
+  │   ├── model.json
+  │   └── ...
+  ├── inventory-management/    ← 在庫管理システム
+  │   ├── state.yaml
+  │   └── ...
+  └── order-processing/        ← 受注処理システム
+      └── ...
+```
+
+これにより、異なる業務ドメインのモデリングを同時進行できます。
 
 ## 使用方法
 
@@ -79,8 +100,8 @@ cat examples/invoice-management.txt
 ### 全体フロー
 
 ```
-1. ブラックボード初期化
-   ↓
+1. プロジェクト名の入力 & ブラックボード初期化
+   ↓ (artifacts/{project_name}/ ディレクトリを作成)
 2. Phase 1: エンティティ抽出
    ↓ (entities_raw.json をブラックボードに書き込み)
 3. Phase 2: リソース/イベント分類
@@ -93,6 +114,8 @@ cat examples/invoice-management.txt
    ↓ (er_diagram.mmd をブラックボードに書き込み)
 7. 最終結果を表示
 ```
+
+**重要:** すべてのブラックボードファイル（`state.yaml`, `entities_raw.json`, `model.json` など）は、プロジェクトごとに独立した `artifacts/{project_name}/` ディレクトリ内に保存されます。
 
 ---
 
@@ -990,7 +1013,7 @@ CREATE INDEX IDX_INVOICE_SEND_DATETIME ON INVOICE_SEND(SendDateTime);
 ### 最終出力
 
 ユーザーに以下を表示:
-1. 生成されたDDLファイルのパス (`artifacts/schema.sql`)
+1. 生成されたDDLファイルのパス (`artifacts/{project_name}/schema.sql`)
 2. テーブル数とリレーションシップ数のサマリー
 3. 次のステップ（Docker環境でのテスト方法など）
 
@@ -1022,27 +1045,64 @@ CREATE INDEX IDX_INVOICE_SEND_DATETIME ON INVOICE_SEND(SendDateTime);
 
 ## 制御ロジック（Claudeの実行手順）
 
-### ステップ1: ブラックボードの初期化
+### ステップ1: プロジェクト名の入力
 
-最初に以下を実行:
+まず、ユーザーにプロジェクト名を確認します。
+
+**プロジェクト名の命名規則:**
+- ケバブケース（kebab-case）推奨（例: `invoice-management`, `inventory-system`）
+- 英数字とハイフンのみ使用
+- スペースや特殊文字は使用不可
+
+**対話例:**
+```
+Claude: モデリングするプロジェクトの名前を入力してください（例: invoice-management）:
+User: invoice-management
+```
+
+既存プロジェクトの確認:
+- `artifacts/{project_name}/` が既に存在する場合は警告を表示
+- ユーザーに選択肢を提示:
+  1. 既存プロジェクトを上書き（既存ファイルは削除される）
+  2. 別の名前で新規作成
+  3. 中断
+
+### ステップ2: ブラックボードの初期化
+
+プロジェクト名を受け取ったら、以下を実行:
 
 ```bash
+# プロジェクト名をシェル変数に設定（例）
+PROJECT_NAME="invoice-management"
+
 # ブラックボード領域を作成
-mkdir -p /tmp/data-modeler-blackboard
+mkdir -p artifacts/${PROJECT_NAME}
 
 # 状態ファイルを初期化
-cat > /tmp/data-modeler-blackboard/state.yaml << 'EOF'
+cat > artifacts/${PROJECT_NAME}/state.yaml << EOF
+project_name: ${PROJECT_NAME}
 current_phase: entity_extraction
 input_usecase: ""
 completed_phases: []
 EOF
 ```
 
-### ステップ2: ユーザー入力の受け取り
+### ステップ3: ユースケース記述の入力
 
 ユーザーからのユースケース記述を `state.yaml` の `input_usecase` に保存。
 
-### ステップ3: フェーズループ
+**対話例:**
+```
+Claude: ユースケースを入力してください:
+User: 請求期日が到来した場合、顧客に請求書を送付する。期日までに入金がない場合には、確認状を送付する。
+```
+
+```bash
+# ユースケースをstate.yamlに追加
+# （実際には Read → Edit で更新）
+```
+
+### ステップ4: フェーズループ
 
 `current_phase` を確認し、以下のフェーズを順次実行:
 
@@ -1054,9 +1114,11 @@ EOF
 
 各フェーズ完了後、`state.yaml` を更新して次フェーズへ。
 
-### ステップ4: 最終結果の表示
+**注意:** 各フェーズでは `artifacts/${PROJECT_NAME}/` 内のファイルを読み書きします。
 
-`er_diagram.mmd` を読み取り、ユーザーに表示。
+### ステップ5: 最終結果の表示
+
+`artifacts/${PROJECT_NAME}/er_diagram.mmd` を読み取り、ユーザーに表示。
 
 ---
 
