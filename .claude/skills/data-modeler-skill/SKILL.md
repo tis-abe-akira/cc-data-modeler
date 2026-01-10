@@ -476,12 +476,129 @@ erDiagram
     }
 ```
 
+### 次フェーズへの遷移
+
+`state.yaml` を更新:
+```yaml
+current_phase: ddl_generation
+completed_phases:
+  - entity_extraction
+  - classification
+  - relationship_analysis
+  - validation
+  - diagram_generation
+```
+
+---
+
+## Phase 6: DDL生成
+
+### 目的
+データモデルから**PostgreSQL用のCREATE TABLE文**を生成します。
+イミュータブルデータモデルのテーブル構造を実際のRDBMSで実現可能にします。
+
+### ブラックボードからの入力
+- `model.json`
+
+### 処理内容
+
+PostgreSQL DDLの生成ルール:
+
+**型マッピング:**
+- `INT` → `INTEGER`
+- `VARCHAR(n)` → `VARCHAR(n)`
+- `DECIMAL(m,n)` → `NUMERIC(m,n)`
+- `TIMESTAMP` → `TIMESTAMP WITH TIME ZONE`
+- `DATE` → `DATE`
+
+**主キー制約:**
+- すべてのエンティティに `PRIMARY KEY` 制約を設定
+- シーケンスを使った自動採番を推奨: `SERIAL` または `GENERATED ALWAYS AS IDENTITY`
+
+**外部キー制約:**
+- `relationships` の情報から `FOREIGN KEY` 制約を生成
+- 参照整合性を保証
+- `ON DELETE` / `ON UPDATE` ポリシー:
+  - リソース → イベント: `ON DELETE RESTRICT` (リソース削除時はイベントが残っているため削除不可)
+  - イベント → リソース: `ON DELETE RESTRICT` (リソース削除時は関連イベントも確認が必要)
+
+**NOT NULL制約:**
+- 主キーは自動的に `NOT NULL`
+- 外部キーは基本的に `NOT NULL`（業務上必須の場合）
+- イベントの日時属性は `NOT NULL`
+
+**テーブル名:**
+- エンティティ名を大文字スネークケースに変換（例: `InvoiceSend` → `INVOICE_SEND`）
+
+**コメント:**
+- `COMMENT ON TABLE` でテーブルの説明を追加
+- `COMMENT ON COLUMN` で各カラムの日本語名を追加
+
+### ブラックボードへの出力
+
+`schema.sql` に以下の形式で書き込み:
+
+```sql
+-- ================================================
+-- イミュータブルデータモデル DDL
+-- 生成日時: YYYY-MM-DD HH:MM:SS
+-- ================================================
+
+-- リソーステーブル
+
+CREATE TABLE CUSTOMER (
+    CustomerID INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    Name VARCHAR(100) NOT NULL,
+    Address VARCHAR(255),
+    Phone VARCHAR(20),
+    CreatedAt TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+COMMENT ON TABLE CUSTOMER IS '顧客';
+COMMENT ON COLUMN CUSTOMER.CustomerID IS '顧客ID';
+COMMENT ON COLUMN CUSTOMER.Name IS '顧客名';
+COMMENT ON COLUMN CUSTOMER.Address IS '住所';
+COMMENT ON COLUMN CUSTOMER.Phone IS '電話番号';
+COMMENT ON COLUMN CUSTOMER.CreatedAt IS '作成日時';
+
+-- イベントテーブル
+
+CREATE TABLE INVOICE_SEND (
+    EventID INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    InvoiceID INTEGER NOT NULL,
+    CustomerID INTEGER NOT NULL,
+    SendDateTime TIMESTAMP WITH TIME ZONE NOT NULL,
+    SendMethod VARCHAR(50),
+    CONSTRAINT FK_INVOICE_SEND_INVOICE FOREIGN KEY (InvoiceID)
+        REFERENCES INVOICE(InvoiceID) ON DELETE RESTRICT,
+    CONSTRAINT FK_INVOICE_SEND_CUSTOMER FOREIGN KEY (CustomerID)
+        REFERENCES CUSTOMER(CustomerID) ON DELETE RESTRICT
+);
+
+COMMENT ON TABLE INVOICE_SEND IS '請求書送付';
+COMMENT ON COLUMN INVOICE_SEND.EventID IS 'イベントID';
+COMMENT ON COLUMN INVOICE_SEND.InvoiceID IS '請求書ID';
+COMMENT ON COLUMN INVOICE_SEND.CustomerID IS '顧客ID';
+COMMENT ON COLUMN INVOICE_SEND.SendDateTime IS '送付日時';
+COMMENT ON COLUMN INVOICE_SEND.SendMethod IS '送付方法';
+
+-- インデックス（パフォーマンス最適化）
+CREATE INDEX IDX_INVOICE_SEND_CUSTOMER ON INVOICE_SEND(CustomerID);
+CREATE INDEX IDX_INVOICE_SEND_INVOICE ON INVOICE_SEND(InvoiceID);
+CREATE INDEX IDX_INVOICE_SEND_DATETIME ON INVOICE_SEND(SendDateTime);
+```
+
+**重要なポイント:**
+1. **テーブル作成順序**: 外部キー参照の依存関係を考慮し、親テーブル → 子テーブルの順に作成
+2. **インデックス**: 外部キーと日時カラムには自動的にインデックスを作成
+3. **コメント**: 日本語での説明を必ず追加（保守性向上）
+
 ### 最終出力
 
 ユーザーに以下を表示:
-1. ER図（Mermaidコード）
-2. 検証結果のサマリー
-3. ブラックボードのパス（必要に応じて確認できるように）
+1. 生成されたDDLファイルのパス (`artifacts/schema.sql`)
+2. テーブル数とリレーションシップ数のサマリー
+3. 次のステップ（Docker環境でのテスト方法など）
 
 ---
 
