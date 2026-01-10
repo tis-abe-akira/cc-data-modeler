@@ -1,0 +1,26 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: cc-data-modeler-postgres
+    environment:
+      POSTGRES_USER: datamodeler
+      POSTGRES_PASSWORD: datamodeler123
+      POSTGRES_DB: immutable_model_db
+      TZ: 'Asia/Tokyo'
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./artifacts/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql
+      - ./artifacts/sample_data_relative.sql:/docker-entrypoint-initdb.d/02-sample_data.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U datamodeler -d immutable_model_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+    driver: local
