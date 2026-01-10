@@ -1,0 +1,46 @@
+{
+  "is_valid": true,
+  "errors": [],
+  "warnings": [],
+  "suggestions": [
+    {
+      "message": "InvoiceエンティティにIssueDate（発行日）がありますが、これは「請求書発行」というイベントとして分離することも検討できます。ただし、現在の設計でも問題ありません。"
+    },
+    {
+      "message": "InvoiceSendとConfirmationSendは両方とも「文書送付」というイベントなので、SendDocumentイベントに統合し、文書タイプ（請求書/確認状）を属性として持たせることも検討できます。ただし、現在の設計でもビジネスロジックが明確で問題ありません。"
+    }
+  ],
+  "validation_details": {
+    "event_datetime_check": {
+      "passed": true,
+      "details": [
+        "InvoiceSend: SendDateTime（1つの日時属性のみ） ✓",
+        "Payment: PaymentDateTime（1つの日時属性のみ） ✓",
+        "ConfirmationSend: SendDateTime（1つの日時属性のみ） ✓"
+      ]
+    },
+    "resource_check": {
+      "passed": true,
+      "details": [
+        "Customer: CreatedAtはシステム用途の日時で適切 ✓",
+        "Invoice: IssueDateは請求書の属性として適切 ✓"
+      ]
+    },
+    "relationship_check": {
+      "passed": true,
+      "details": [
+        "多対多の関係なし ✓",
+        "すべての外部キーが適切に定義されている ✓",
+        "カーディナリティが明確 ✓"
+      ]
+    },
+    "naming_check": {
+      "passed": true,
+      "details": [
+        "エンティティ名: PascalCase、単数形 ✓",
+        "主キー: {エンティティ名}ID形式 ✓",
+        "外部キーが参照先の主キー名と一致 ✓"
+      ]
+    }
+  }
+}

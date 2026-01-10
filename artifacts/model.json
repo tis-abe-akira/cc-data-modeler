@@ -1,0 +1,254 @@
+{
+  "entities": [
+    {
+      "name": "Customer",
+      "type": "resource",
+      "attributes": [
+        {
+          "japanese": "顧客ID",
+          "english": "CustomerID",
+          "type": "INT",
+          "is_primary_key": true
+        },
+        {
+          "japanese": "顧客名",
+          "english": "Name",
+          "type": "VARCHAR(100)",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "住所",
+          "english": "Address",
+          "type": "VARCHAR(255)",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "電話番号",
+          "english": "Phone",
+          "type": "VARCHAR(20)",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "作成日時",
+          "english": "CreatedAt",
+          "type": "TIMESTAMP",
+          "is_primary_key": false
+        }
+      ]
+    },
+    {
+      "name": "Invoice",
+      "type": "resource",
+      "attributes": [
+        {
+          "japanese": "請求書ID",
+          "english": "InvoiceID",
+          "type": "INT",
+          "is_primary_key": true
+        },
+        {
+          "japanese": "顧客ID",
+          "english": "CustomerID",
+          "type": "INT",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "請求番号",
+          "english": "InvoiceNumber",
+          "type": "VARCHAR(50)",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "発行日",
+          "english": "IssueDate",
+          "type": "DATE",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "請求金額",
+          "english": "Amount",
+          "type": "DECIMAL(10,2)",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "支払期日",
+          "english": "DueDate",
+          "type": "DATE",
+          "is_primary_key": false
+        }
+      ]
+    },
+    {
+      "name": "InvoiceSend",
+      "type": "event",
+      "attributes": [
+        {
+          "japanese": "イベントID",
+          "english": "EventID",
+          "type": "INT",
+          "is_primary_key": true
+        },
+        {
+          "japanese": "請求書ID",
+          "english": "InvoiceID",
+          "type": "INT",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "顧客ID",
+          "english": "CustomerID",
+          "type": "INT",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "送付日時",
+          "english": "SendDateTime",
+          "type": "TIMESTAMP",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "送付方法",
+          "english": "SendMethod",
+          "type": "VARCHAR(50)",
+          "is_primary_key": false
+        }
+      ]
+    },
+    {
+      "name": "Payment",
+      "type": "event",
+      "attributes": [
+        {
+          "japanese": "入金ID",
+          "english": "PaymentID",
+          "type": "INT",
+          "is_primary_key": true
+        },
+        {
+          "japanese": "請求書ID",
+          "english": "InvoiceID",
+          "type": "INT",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "顧客ID",
+          "english": "CustomerID",
+          "type": "INT",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "入金日時",
+          "english": "PaymentDateTime",
+          "type": "TIMESTAMP",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "入金額",
+          "english": "PaymentAmount",
+          "type": "DECIMAL(10,2)",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "入金方法",
+          "english": "PaymentMethod",
+          "type": "VARCHAR(50)",
+          "is_primary_key": false
+        }
+      ]
+    },
+    {
+      "name": "ConfirmationSend",
+      "type": "event",
+      "attributes": [
+        {
+          "japanese": "確認状ID",
+          "english": "ConfirmationID",
+          "type": "INT",
+          "is_primary_key": true
+        },
+        {
+          "japanese": "請求書ID",
+          "english": "InvoiceID",
+          "type": "INT",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "顧客ID",
+          "english": "CustomerID",
+          "type": "INT",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "送付日時",
+          "english": "SendDateTime",
+          "type": "TIMESTAMP",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "送付方法",
+          "english": "SendMethod",
+          "type": "VARCHAR(50)",
+          "is_primary_key": false
+        }
+      ]
+    }
+  ],
+  "relationships": [
+    {
+      "from": "Customer",
+      "to": "Invoice",
+      "cardinality": "1:N",
+      "from_attribute": "CustomerID",
+      "to_attribute": "CustomerID",
+      "relationship_type": "has"
+    },
+    {
+      "from": "Customer",
+      "to": "InvoiceSend",
+      "cardinality": "1:N",
+      "from_attribute": "CustomerID",
+      "to_attribute": "CustomerID",
+      "relationship_type": "receives"
+    },
+    {
+      "from": "Invoice",
+      "to": "InvoiceSend",
+      "cardinality": "1:N",
+      "from_attribute": "InvoiceID",
+      "to_attribute": "InvoiceID",
+      "relationship_type": "sent_by"
+    },
+    {
+      "from": "Customer",
+      "to": "Payment",
+      "cardinality": "1:N",
+      "from_attribute": "CustomerID",
+      "to_attribute": "CustomerID",
+      "relationship_type": "makes"
+    },
+    {
+      "from": "Invoice",
+      "to": "Payment",
+      "cardinality": "1:N",
+      "from_attribute": "InvoiceID",
+      "to_attribute": "InvoiceID",
+      "relationship_type": "paid_by"
+    },
+    {
+      "from": "Customer",
+      "to": "ConfirmationSend",
+      "cardinality": "1:N",
+      "from_attribute": "CustomerID",
+      "to_attribute": "CustomerID",
+      "relationship_type": "receives"
+    },
+    {
+      "from": "Invoice",
+      "to": "ConfirmationSend",
+      "cardinality": "1:N",
+      "from_attribute": "InvoiceID",
+      "to_attribute": "InvoiceID",
+      "relationship_type": "confirmed_by"
+    }
+  ]
+}

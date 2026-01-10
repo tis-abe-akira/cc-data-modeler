@@ -1,0 +1,46 @@
+{
+  "noun_candidates": [
+    {
+      "japanese": "顧客",
+      "english": "Customer",
+      "note": "請求書を受け取る対象"
+    },
+    {
+      "japanese": "請求書",
+      "english": "Invoice",
+      "note": "発行される請求文書。請求番号、発行日、請求金額、支払期日を含む"
+    },
+    {
+      "japanese": "入金",
+      "english": "Payment",
+      "note": "顧客からの支払い。入金日、入金額、入金方法を記録"
+    },
+    {
+      "japanese": "確認状",
+      "english": "Confirmation",
+      "note": "未入金時に送付される確認文書"
+    },
+    {
+      "japanese": "請求期日",
+      "english": "DueDate",
+      "note": "支払いの期限日（Invoiceの属性）"
+    }
+  ],
+  "verb_candidates": [
+    {
+      "japanese": "送付する",
+      "english": "send",
+      "note": "請求書や確認状を顧客に送る行為"
+    },
+    {
+      "japanese": "到来する",
+      "english": "arrive",
+      "note": "期日が来ること"
+    },
+    {
+      "japanese": "入金する",
+      "english": "pay",
+      "note": "支払いを行うこと"
+    }
+  ]
+}

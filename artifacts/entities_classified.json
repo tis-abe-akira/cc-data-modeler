@@ -1,0 +1,218 @@
+{
+  "resources": [
+    {
+      "japanese": "顧客",
+      "english": "Customer",
+      "attributes": [
+        {
+          "japanese": "顧客ID",
+          "english": "CustomerID",
+          "type": "INT",
+          "is_primary_key": true
+        },
+        {
+          "japanese": "顧客名",
+          "english": "Name",
+          "type": "VARCHAR(100)",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "住所",
+          "english": "Address",
+          "type": "VARCHAR(255)",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "電話番号",
+          "english": "Phone",
+          "type": "VARCHAR(20)",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "作成日時",
+          "english": "CreatedAt",
+          "type": "TIMESTAMP",
+          "is_primary_key": false
+        }
+      ],
+      "note": "請求書を受け取る主体。継続的に存在し管理される"
+    },
+    {
+      "japanese": "請求書",
+      "english": "Invoice",
+      "attributes": [
+        {
+          "japanese": "請求書ID",
+          "english": "InvoiceID",
+          "type": "INT",
+          "is_primary_key": true
+        },
+        {
+          "japanese": "顧客ID",
+          "english": "CustomerID",
+          "type": "INT",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "請求番号",
+          "english": "InvoiceNumber",
+          "type": "VARCHAR(50)",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "発行日",
+          "english": "IssueDate",
+          "type": "DATE",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "請求金額",
+          "english": "Amount",
+          "type": "DECIMAL(10,2)",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "支払期日",
+          "english": "DueDate",
+          "type": "DATE",
+          "is_primary_key": false
+        }
+      ],
+      "note": "発行された請求文書。顧客に対する請求内容を保持"
+    }
+  ],
+  "events": [
+    {
+      "japanese": "請求書送付",
+      "english": "InvoiceSend",
+      "datetime_attribute": {
+        "japanese": "送付日時",
+        "english": "SendDateTime",
+        "type": "TIMESTAMP"
+      },
+      "attributes": [
+        {
+          "japanese": "イベントID",
+          "english": "EventID",
+          "type": "INT",
+          "is_primary_key": true
+        },
+        {
+          "japanese": "請求書ID",
+          "english": "InvoiceID",
+          "type": "INT",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "顧客ID",
+          "english": "CustomerID",
+          "type": "INT",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "送付日時",
+          "english": "SendDateTime",
+          "type": "TIMESTAMP",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "送付方法",
+          "english": "SendMethod",
+          "type": "VARCHAR(50)",
+          "is_primary_key": false
+        }
+      ],
+      "note": "請求書を顧客に送付した事実。特定時点で発生した不変のイベント"
+    },
+    {
+      "japanese": "入金",
+      "english": "Payment",
+      "datetime_attribute": {
+        "japanese": "入金日時",
+        "english": "PaymentDateTime",
+        "type": "TIMESTAMP"
+      },
+      "attributes": [
+        {
+          "japanese": "入金ID",
+          "english": "PaymentID",
+          "type": "INT",
+          "is_primary_key": true
+        },
+        {
+          "japanese": "請求書ID",
+          "english": "InvoiceID",
+          "type": "INT",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "顧客ID",
+          "english": "CustomerID",
+          "type": "INT",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "入金日時",
+          "english": "PaymentDateTime",
+          "type": "TIMESTAMP",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "入金額",
+          "english": "PaymentAmount",
+          "type": "DECIMAL(10,2)",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "入金方法",
+          "english": "PaymentMethod",
+          "type": "VARCHAR(50)",
+          "is_primary_key": false
+        }
+      ],
+      "note": "顧客が支払いを行った事実。特定時点で発生した不変のイベント"
+    },
+    {
+      "japanese": "確認状送付",
+      "english": "ConfirmationSend",
+      "datetime_attribute": {
+        "japanese": "送付日時",
+        "english": "SendDateTime",
+        "type": "TIMESTAMP"
+      },
+      "attributes": [
+        {
+          "japanese": "確認状ID",
+          "english": "ConfirmationID",
+          "type": "INT",
+          "is_primary_key": true
+        },
+        {
+          "japanese": "請求書ID",
+          "english": "InvoiceID",
+          "type": "INT",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "顧客ID",
+          "english": "CustomerID",
+          "type": "INT",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "送付日時",
+          "english": "SendDateTime",
+          "type": "TIMESTAMP",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "送付方法",
+          "english": "SendMethod",
+          "type": "VARCHAR(50)",
+          "is_primary_key": false
+        }
+      ],
+      "note": "未入金時に確認状を顧客に送付した事実。特定時点で発生した不変のイベント"
+    }
+  ]
+}

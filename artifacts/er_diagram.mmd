@@ -1,0 +1,50 @@
+erDiagram
+    CUSTOMER ||--o{ INVOICE : "has"
+    CUSTOMER ||--o{ INVOICE_SEND : "receives"
+    INVOICE ||--o{ INVOICE_SEND : "sent_by"
+    CUSTOMER ||--o{ PAYMENT : "makes"
+    INVOICE ||--o{ PAYMENT : "paid_by"
+    CUSTOMER ||--o{ CONFIRMATION_SEND : "receives"
+    INVOICE ||--o{ CONFIRMATION_SEND : "confirmed_by"
+
+    CUSTOMER {
+        int CustomerID PK
+        varchar Name
+        varchar Address
+        varchar Phone
+        timestamp CreatedAt
+    }
+
+    INVOICE {
+        int InvoiceID PK
+        int CustomerID FK
+        varchar InvoiceNumber
+        date IssueDate
+        decimal Amount
+        date DueDate
+    }
+
+    INVOICE_SEND {
+        int EventID PK
+        int InvoiceID FK
+        int CustomerID FK
+        timestamp SendDateTime
+        varchar SendMethod
+    }
+
+    PAYMENT {
+        int PaymentID PK
+        int InvoiceID FK
+        int CustomerID FK
+        timestamp PaymentDateTime
+        decimal PaymentAmount
+        varchar PaymentMethod
+    }
+
+    CONFIRMATION_SEND {
+        int ConfirmationID PK
+        int InvoiceID FK
+        int CustomerID FK
+        timestamp SendDateTime
+        varchar SendMethod
+    }

@@ -1,0 +1,15 @@
+current_phase: diagram_generation
+input_usecase: |
+  請求期日が到来した場合、顧客に請求書を送付する。期日までに入金がない場合には、確認状を送付する。
+
+  追加要件:
+  - 顧客は複数の請求書を受け取ることができる
+  - 請求書には請求番号、発行日、請求金額、支払期日が含まれる
+  - 入金には入金日、入金額、入金方法が記録される
+  - 確認状の送付履歴も保持する
+  - すべてのイベント（請求書送付、入金、確認状送付）には日時を記録する
+completed_phases:
+  - entity_extraction
+  - classification
+  - relationship_analysis
+  - validation
