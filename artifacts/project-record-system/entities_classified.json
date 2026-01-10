@@ -1,0 +1,695 @@
+{
+  "resources": [
+    {
+      "japanese": "プロジェクト",
+      "english": "Project",
+      "attributes": [
+        {
+          "japanese": "プロジェクトID",
+          "english": "ProjectID",
+          "type": "INT",
+          "is_primary_key": true
+        },
+        {
+          "japanese": "プロジェクト名",
+          "english": "ProjectName",
+          "type": "VARCHAR(200)",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "顧客ID",
+          "english": "CustomerID",
+          "type": "INT",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "受注規模",
+          "english": "EstimatedEffort",
+          "type": "DECIMAL(10,2)",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "計画開始日",
+          "english": "PlannedStartDate",
+          "type": "DATE",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "計画終了日",
+          "english": "PlannedEndDate",
+          "type": "DATE",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "作成日時",
+          "english": "CreatedAt",
+          "type": "TIMESTAMP",
+          "is_primary_key": false
+        }
+      ],
+      "note": "システム開発プロジェクト。継続的に管理される開発案件。開発種別・方式・工程はタグとして多対多で関連付け"
+    },
+    {
+      "japanese": "人",
+      "english": "Person",
+      "attributes": [
+        {
+          "japanese": "人ID",
+          "english": "PersonID",
+          "type": "INT",
+          "is_primary_key": true
+        },
+        {
+          "japanese": "氏名",
+          "english": "Name",
+          "type": "VARCHAR(100)",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "メールアドレス",
+          "english": "Email",
+          "type": "VARCHAR(100)",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "作成日時",
+          "english": "CreatedAt",
+          "type": "TIMESTAMP",
+          "is_primary_key": false
+        }
+      ],
+      "note": "従業員。PM、PL、オーナー、メンバー、支援担当者などの役割を持つ"
+    },
+    {
+      "japanese": "組織",
+      "english": "Organization",
+      "attributes": [
+        {
+          "japanese": "組織ID",
+          "english": "OrganizationID",
+          "type": "INT",
+          "is_primary_key": true
+        },
+        {
+          "japanese": "組織名",
+          "english": "OrganizationName",
+          "type": "VARCHAR(100)",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "組織種別",
+          "english": "OrganizationType",
+          "type": "VARCHAR(50)",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "親組織ID",
+          "english": "ParentOrganizationID",
+          "type": "INT",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "作成日時",
+          "english": "CreatedAt",
+          "type": "TIMESTAMP",
+          "is_primary_key": false
+        }
+      ],
+      "note": "部門、事業部。プロジェクトに参画する組織単位"
+    },
+    {
+      "japanese": "顧客",
+      "english": "Customer",
+      "attributes": [
+        {
+          "japanese": "顧客ID",
+          "english": "CustomerID",
+          "type": "INT",
+          "is_primary_key": true
+        },
+        {
+          "japanese": "顧客名",
+          "english": "CustomerName",
+          "type": "VARCHAR(200)",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "業界ID",
+          "english": "IndustryID",
+          "type": "INT",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "作成日時",
+          "english": "CreatedAt",
+          "type": "TIMESTAMP",
+          "is_primary_key": false
+        }
+      ],
+      "note": "プロジェクトの発注元企業"
+    },
+    {
+      "japanese": "業界",
+      "english": "Industry",
+      "attributes": [
+        {
+          "japanese": "業界ID",
+          "english": "IndustryID",
+          "type": "INT",
+          "is_primary_key": true
+        },
+        {
+          "japanese": "業界名",
+          "english": "IndustryName",
+          "type": "VARCHAR(100)",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "作成日時",
+          "english": "CreatedAt",
+          "type": "TIMESTAMP",
+          "is_primary_key": false
+        }
+      ],
+      "note": "顧客の属する業界"
+    },
+    {
+      "japanese": "役割",
+      "english": "Role",
+      "attributes": [
+        {
+          "japanese": "役割ID",
+          "english": "RoleID",
+          "type": "INT",
+          "is_primary_key": true
+        },
+        {
+          "japanese": "役割名",
+          "english": "RoleName",
+          "type": "VARCHAR(50)",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "作成日時",
+          "english": "CreatedAt",
+          "type": "TIMESTAMP",
+          "is_primary_key": false
+        }
+      ],
+      "note": "プロジェクトにおける役割（オーナー、PM、PL、メンバー）"
+    },
+    {
+      "japanese": "支援タイプ",
+      "english": "SupportType",
+      "attributes": [
+        {
+          "japanese": "支援タイプID",
+          "english": "SupportTypeID",
+          "type": "INT",
+          "is_primary_key": true
+        },
+        {
+          "japanese": "支援タイプ名",
+          "english": "SupportTypeName",
+          "type": "VARCHAR(100)",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "説明",
+          "english": "Description",
+          "type": "TEXT",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "作成日時",
+          "english": "CreatedAt",
+          "type": "TIMESTAMP",
+          "is_primary_key": false
+        }
+      ],
+      "note": "支援の種類（AI活用支援、セキュリティチェックなど）。将来的に拡張可能"
+    },
+    {
+      "japanese": "ユーザー",
+      "english": "User",
+      "attributes": [
+        {
+          "japanese": "ユーザーID",
+          "english": "UserID",
+          "type": "INT",
+          "is_primary_key": true
+        },
+        {
+          "japanese": "人ID",
+          "english": "PersonID",
+          "type": "INT",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "ユーザー名",
+          "english": "Username",
+          "type": "VARCHAR(50)",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "作成日時",
+          "english": "CreatedAt",
+          "type": "TIMESTAMP",
+          "is_primary_key": false
+        }
+      ],
+      "note": "システム利用者。アクセス制御の主体"
+    },
+    {
+      "japanese": "開発種別",
+      "english": "DevelopmentType",
+      "attributes": [
+        {
+          "japanese": "開発種別ID",
+          "english": "DevelopmentTypeID",
+          "type": "INT",
+          "is_primary_key": true
+        },
+        {
+          "japanese": "開発種別名",
+          "english": "DevelopmentTypeName",
+          "type": "VARCHAR(100)",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "説明",
+          "english": "Description",
+          "type": "TEXT",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "作成日時",
+          "english": "CreatedAt",
+          "type": "TIMESTAMP",
+          "is_primary_key": false
+        }
+      ],
+      "note": "開発種別のマスター（新規開発、保守など）。プロジェクトにタグとして関連付け"
+    },
+    {
+      "japanese": "開発方式",
+      "english": "DevelopmentMethod",
+      "attributes": [
+        {
+          "japanese": "開発方式ID",
+          "english": "DevelopmentMethodID",
+          "type": "INT",
+          "is_primary_key": true
+        },
+        {
+          "japanese": "開発方式名",
+          "english": "DevelopmentMethodName",
+          "type": "VARCHAR(100)",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "説明",
+          "english": "Description",
+          "type": "TEXT",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "作成日時",
+          "english": "CreatedAt",
+          "type": "TIMESTAMP",
+          "is_primary_key": false
+        }
+      ],
+      "note": "開発方式のマスター（スクラッチ、パッケージ利用など）。プロジェクトにタグとして関連付け"
+    },
+    {
+      "japanese": "対象工程",
+      "english": "TargetPhase",
+      "attributes": [
+        {
+          "japanese": "対象工程ID",
+          "english": "TargetPhaseID",
+          "type": "INT",
+          "is_primary_key": true
+        },
+        {
+          "japanese": "対象工程名",
+          "english": "TargetPhaseName",
+          "type": "VARCHAR(100)",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "説明",
+          "english": "Description",
+          "type": "TEXT",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "作成日時",
+          "english": "CreatedAt",
+          "type": "TIMESTAMP",
+          "is_primary_key": false
+        }
+      ],
+      "note": "対象工程のマスター（要件定義、設計、実装、テストなど）。プロジェクトにタグとして関連付け"
+    }
+  ],
+  "events": [
+    {
+      "japanese": "プロジェクト開始",
+      "english": "ProjectStart",
+      "datetime_attribute": {
+        "japanese": "開始日時",
+        "english": "StartDateTime",
+        "type": "TIMESTAMP"
+      },
+      "attributes": [
+        {
+          "japanese": "イベントID",
+          "english": "EventID",
+          "type": "INT",
+          "is_primary_key": true
+        },
+        {
+          "japanese": "プロジェクトID",
+          "english": "ProjectID",
+          "type": "INT",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "開始日時",
+          "english": "StartDateTime",
+          "type": "TIMESTAMP",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "登録者ID",
+          "english": "RegisteredBy",
+          "type": "INT",
+          "is_primary_key": false
+        }
+      ],
+      "note": "プロジェクトが発足した事実。特定時点で発生した不変のイベント"
+    },
+    {
+      "japanese": "組織参画",
+      "english": "OrganizationJoin",
+      "datetime_attribute": {
+        "japanese": "参画日時",
+        "english": "JoinDateTime",
+        "type": "TIMESTAMP"
+      },
+      "attributes": [
+        {
+          "japanese": "イベントID",
+          "english": "EventID",
+          "type": "INT",
+          "is_primary_key": true
+        },
+        {
+          "japanese": "プロジェクトID",
+          "english": "ProjectID",
+          "type": "INT",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "組織ID",
+          "english": "OrganizationID",
+          "type": "INT",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "参画日時",
+          "english": "JoinDateTime",
+          "type": "TIMESTAMP",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "登録者ID",
+          "english": "RegisteredBy",
+          "type": "INT",
+          "is_primary_key": false
+        }
+      ],
+      "note": "組織がプロジェクトに参画した事実。履歴を完全に追跡可能"
+    },
+    {
+      "japanese": "担当者アサイン",
+      "english": "PersonAssign",
+      "datetime_attribute": {
+        "japanese": "アサイン日時",
+        "english": "AssignDateTime",
+        "type": "TIMESTAMP"
+      },
+      "attributes": [
+        {
+          "japanese": "イベントID",
+          "english": "EventID",
+          "type": "INT",
+          "is_primary_key": true
+        },
+        {
+          "japanese": "プロジェクトID",
+          "english": "ProjectID",
+          "type": "INT",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "人ID",
+          "english": "PersonID",
+          "type": "INT",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "役割ID",
+          "english": "RoleID",
+          "type": "INT",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "アサイン日時",
+          "english": "AssignDateTime",
+          "type": "TIMESTAMP",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "登録者ID",
+          "english": "RegisteredBy",
+          "type": "INT",
+          "is_primary_key": false
+        }
+      ],
+      "note": "担当者がプロジェクトにアサインされた事実。役割ごとに記録"
+    },
+    {
+      "japanese": "担当者交代",
+      "english": "PersonReplace",
+      "datetime_attribute": {
+        "japanese": "交代日時",
+        "english": "ReplaceDateTime",
+        "type": "TIMESTAMP"
+      },
+      "attributes": [
+        {
+          "japanese": "イベントID",
+          "english": "EventID",
+          "type": "INT",
+          "is_primary_key": true
+        },
+        {
+          "japanese": "プロジェクトID",
+          "english": "ProjectID",
+          "type": "INT",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "旧担当者ID",
+          "english": "OldPersonID",
+          "type": "INT",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "新担当者ID",
+          "english": "NewPersonID",
+          "type": "INT",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "役割ID",
+          "english": "RoleID",
+          "type": "INT",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "交代日時",
+          "english": "ReplaceDateTime",
+          "type": "TIMESTAMP",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "登録者ID",
+          "english": "RegisteredBy",
+          "type": "INT",
+          "is_primary_key": false
+        }
+      ],
+      "note": "担当者が交代した事実。誰がいつまで担当していたかを正確に追跡"
+    },
+    {
+      "japanese": "リスク評価",
+      "english": "RiskEvaluate",
+      "datetime_attribute": {
+        "japanese": "評価日時",
+        "english": "EvaluateDateTime",
+        "type": "TIMESTAMP"
+      },
+      "attributes": [
+        {
+          "japanese": "イベントID",
+          "english": "EventID",
+          "type": "INT",
+          "is_primary_key": true
+        },
+        {
+          "japanese": "プロジェクトID",
+          "english": "ProjectID",
+          "type": "INT",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "リスクランク",
+          "english": "RiskRank",
+          "type": "VARCHAR(20)",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "評価日時",
+          "english": "EvaluateDateTime",
+          "type": "TIMESTAMP",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "評価者ID",
+          "english": "EvaluatedBy",
+          "type": "INT",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "システム提案フラグ",
+          "english": "IsSystemProposed",
+          "type": "BOOLEAN",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "手動調整フラグ",
+          "english": "IsManualAdjusted",
+          "type": "BOOLEAN",
+          "is_primary_key": false
+        }
+      ],
+      "note": "リスクランクが評価された事実。見直し履歴も追跡可能"
+    },
+    {
+      "japanese": "支援実施",
+      "english": "SupportExecute",
+      "datetime_attribute": {
+        "japanese": "実施日時",
+        "english": "ExecuteDateTime",
+        "type": "TIMESTAMP"
+      },
+      "attributes": [
+        {
+          "japanese": "イベントID",
+          "english": "EventID",
+          "type": "INT",
+          "is_primary_key": true
+        },
+        {
+          "japanese": "プロジェクトID",
+          "english": "ProjectID",
+          "type": "INT",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "支援タイプID",
+          "english": "SupportTypeID",
+          "type": "INT",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "支援担当者ID",
+          "english": "SupportPersonID",
+          "type": "INT",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "実施日時",
+          "english": "ExecuteDateTime",
+          "type": "TIMESTAMP",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "支援内容",
+          "english": "SupportContent",
+          "type": "TEXT",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "成果",
+          "english": "Outcome",
+          "type": "TEXT",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "メモ",
+          "english": "Memo",
+          "type": "TEXT",
+          "is_primary_key": false
+        }
+      ],
+      "note": "専門家が支援を実施した事実。複数回の支援履歴を記録"
+    },
+    {
+      "japanese": "プロジェクト完了",
+      "english": "ProjectComplete",
+      "datetime_attribute": {
+        "japanese": "完了日時",
+        "english": "CompleteDateTime",
+        "type": "TIMESTAMP"
+      },
+      "attributes": [
+        {
+          "japanese": "イベントID",
+          "english": "EventID",
+          "type": "INT",
+          "is_primary_key": true
+        },
+        {
+          "japanese": "プロジェクトID",
+          "english": "ProjectID",
+          "type": "INT",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "完了日時",
+          "english": "CompleteDateTime",
+          "type": "TIMESTAMP",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "実績工数",
+          "english": "ActualEffort",
+          "type": "DECIMAL(10,2)",
+          "is_primary_key": false
+        },
+        {
+          "japanese": "登録者ID",
+          "english": "RegisteredBy",
+          "type": "INT",
+          "is_primary_key": false
+        }
+      ],
+      "note": "プロジェクトが完了した事実。実績情報を確定"
+    }
+  ]
+}

@@ -1,0 +1,199 @@
+erDiagram
+    %% ============================================
+    %% プロジェクト実績管理システム - ER図
+    %% イミュータブルデータモデル
+    %% ============================================
+
+    %% リソース
+
+    CUSTOMER ||--o{ PROJECT : "has"
+    CUSTOMER {
+        int CustomerID PK
+        varchar CustomerName
+        int IndustryID FK
+        timestamp CreatedAt
+    }
+
+    INDUSTRY ||--o{ CUSTOMER : "categorizes"
+    INDUSTRY {
+        int IndustryID PK
+        varchar IndustryName
+        timestamp CreatedAt
+    }
+
+    PROJECT ||--o{ PROJECT_DEVELOPMENT_TYPE : "tagged"
+    PROJECT ||--o{ PROJECT_DEVELOPMENT_METHOD : "tagged"
+    PROJECT ||--o{ PROJECT_TARGET_PHASE : "tagged"
+    PROJECT {
+        int ProjectID PK
+        varchar ProjectName
+        int CustomerID FK
+        decimal EstimatedEffort
+        date PlannedStartDate
+        date PlannedEndDate
+        timestamp CreatedAt
+    }
+
+    PERSON ||--|| USER : "becomes"
+    PERSON {
+        int PersonID PK
+        varchar Name
+        varchar Email
+        timestamp CreatedAt
+    }
+
+    USER {
+        int UserID PK
+        int PersonID FK
+        varchar Username
+        timestamp CreatedAt
+    }
+
+    ORGANIZATION ||--o{ ORGANIZATION : "contains"
+    ORGANIZATION {
+        int OrganizationID PK
+        varchar OrganizationName
+        varchar OrganizationType
+        int ParentOrganizationID FK
+        timestamp CreatedAt
+    }
+
+    ROLE {
+        int RoleID PK
+        varchar RoleName
+        timestamp CreatedAt
+    }
+
+    SUPPORT_TYPE {
+        int SupportTypeID PK
+        varchar SupportTypeName
+        text Description
+        timestamp CreatedAt
+    }
+
+    %% マスターテーブル（タグ）
+
+    DEVELOPMENT_TYPE ||--o{ PROJECT_DEVELOPMENT_TYPE : "categorizes"
+    DEVELOPMENT_TYPE {
+        int DevelopmentTypeID PK
+        varchar DevelopmentTypeName
+        text Description
+        timestamp CreatedAt
+    }
+
+    DEVELOPMENT_METHOD ||--o{ PROJECT_DEVELOPMENT_METHOD : "categorizes"
+    DEVELOPMENT_METHOD {
+        int DevelopmentMethodID PK
+        varchar DevelopmentMethodName
+        text Description
+        timestamp CreatedAt
+    }
+
+    TARGET_PHASE ||--o{ PROJECT_TARGET_PHASE : "categorizes"
+    TARGET_PHASE {
+        int TargetPhaseID PK
+        varchar TargetPhaseName
+        text Description
+        timestamp CreatedAt
+    }
+
+    %% 交差テーブル（タグ方式）
+
+    PROJECT_DEVELOPMENT_TYPE {
+        int ProjectID PK,FK
+        int DevelopmentTypeID PK,FK
+    }
+
+    PROJECT_DEVELOPMENT_METHOD {
+        int ProjectID PK,FK
+        int DevelopmentMethodID PK,FK
+    }
+
+    PROJECT_TARGET_PHASE {
+        int ProjectID PK,FK
+        int TargetPhaseID PK,FK
+    }
+
+    %% イベント
+
+    PROJECT ||--o{ PROJECT_START : "started_by"
+    PERSON ||--o{ PROJECT_START : "registers"
+    PROJECT_START {
+        int EventID PK
+        int ProjectID FK
+        timestamp StartDateTime
+        int RegisteredBy FK
+    }
+
+    PROJECT ||--o{ ORGANIZATION_JOIN : "joined_by"
+    ORGANIZATION ||--o{ ORGANIZATION_JOIN : "joins"
+    PERSON ||--o{ ORGANIZATION_JOIN : "registers"
+    ORGANIZATION_JOIN {
+        int EventID PK
+        int ProjectID FK
+        int OrganizationID FK
+        timestamp JoinDateTime
+        int RegisteredBy FK
+    }
+
+    PROJECT ||--o{ PERSON_ASSIGN : "assigned"
+    PERSON ||--o{ PERSON_ASSIGN : "assigned_to"
+    ROLE ||--o{ PERSON_ASSIGN : "defines"
+    PERSON_ASSIGN {
+        int EventID PK
+        int ProjectID FK
+        int PersonID FK
+        int RoleID FK
+        timestamp AssignDateTime
+        int RegisteredBy FK
+    }
+
+    PROJECT ||--o{ PERSON_REPLACE : "replaced_in"
+    PERSON ||--o{ PERSON_REPLACE : "replaced_from_old"
+    PERSON ||--o{ PERSON_REPLACE : "replaced_to_new"
+    ROLE ||--o{ PERSON_REPLACE : "defines"
+    PERSON_REPLACE {
+        int EventID PK
+        int ProjectID FK
+        int OldPersonID FK
+        int NewPersonID FK
+        int RoleID FK
+        timestamp ReplaceDateTime
+        int RegisteredBy FK
+    }
+
+    PROJECT ||--o{ RISK_EVALUATE : "evaluated_by"
+    PERSON ||--o{ RISK_EVALUATE : "evaluates"
+    RISK_EVALUATE {
+        int EventID PK
+        int ProjectID FK
+        varchar RiskRank
+        timestamp EvaluateDateTime
+        int EvaluatedBy FK
+        boolean IsSystemProposed
+        boolean IsManualAdjusted
+    }
+
+    PROJECT ||--o{ SUPPORT_EXECUTE : "supported_by"
+    SUPPORT_TYPE ||--o{ SUPPORT_EXECUTE : "categorizes"
+    PERSON ||--o{ SUPPORT_EXECUTE : "supports"
+    SUPPORT_EXECUTE {
+        int EventID PK
+        int ProjectID FK
+        int SupportTypeID FK
+        int SupportPersonID FK
+        timestamp ExecuteDateTime
+        text SupportContent
+        text Outcome
+        text Memo
+    }
+
+    PROJECT ||--o{ PROJECT_COMPLETE : "completed_by"
+    PERSON ||--o{ PROJECT_COMPLETE : "registers"
+    PROJECT_COMPLETE {
+        int EventID PK
+        int ProjectID FK
+        timestamp CompleteDateTime
+        decimal ActualEffort
+        int RegisteredBy FK
+    }
