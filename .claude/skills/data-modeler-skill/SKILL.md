@@ -102,20 +102,135 @@ cat examples/invoice-management.txt
 ```
 1. プロジェクト名の入力 & ブラックボード初期化
    ↓ (artifacts/{project_name}/ ディレクトリを作成)
-2. Phase 1: エンティティ抽出
+2. Phase 0.5: ユースケース詳細化 ★NEW
+   ↓ (usecase_detailed.md をブラックボードに書き込み)
+3. Phase 1: エンティティ抽出
    ↓ (entities_raw.json をブラックボードに書き込み)
-3. Phase 2: リソース/イベント分類
+4. Phase 2: リソース/イベント分類
    ↓ (entities_classified.json をブラックボードに書き込み)
-4. Phase 3: 関連分析
+5. Phase 2.5: 属性レビュー
+   ↓ (entities_classified.json を更新)
+6. Phase 3: 関連分析
    ↓ (model.json をブラックボードに書き込み)
-5. Phase 4: 検証
+7. Phase 4: 検証
    ↓ (validation_result.json をブラックボードに書き込み)
-6. Phase 5: ER図生成
+8. Phase 5: ER図生成
    ↓ (er_diagram.mmd をブラックボードに書き込み)
-7. 最終結果を表示
+9. Phase 6: DDL生成
+   ↓ (schema.sql, sample_data.sql, query_examples.sql をブラックボードに書き込み)
+10. Phase 7: OpenAPI生成 ★NEW
+    ↓ (openapi.yaml をブラックボードに書き込み)
+11. 最終結果を表示
 ```
 
 **重要:** すべてのブラックボードファイル（`state.yaml`, `entities_raw.json`, `model.json` など）は、プロジェクトごとに独立した `artifacts/{project_name}/` ディレクトリ内に保存されます。
+
+---
+
+## Phase 0.5: ユースケース詳細化
+
+### 目的
+漠然とした要求メモから作成されたユースケースを、API設計に十分な詳細レベルに引き上げます。
+AIが推定した基本的なユースケースを叩き台として、ユーザーの業務知識を反映させることでモデル精度を向上させます。
+
+### ブラックボードからの入力
+- `usecase.md`（Phase 0で生成された基本的なユースケース）
+- `state.yaml` の `project_name` フィールド
+
+### 処理内容
+
+このフェーズは `/usecase-detailer` スキルを使用して実行します。
+
+**詳細化する要素:**
+
+1. **CRUD操作の補完**
+   - Create: どのエンティティをどのタイミングで作成？
+   - Read: どの検索条件・フィルター・ソートが必要？
+   - Update: どの属性を変更可能？誰が変更可能？
+   - Delete: 論理削除？物理削除？削除条件は？
+
+2. **エラーケースの定義**
+   - バリデーションエラー（必須項目、型、範囲）
+   - ビジネスルール違反（重複、権限、状態遷移）
+   - 外部依存エラー（DB接続、外部API）
+
+3. **検証ルールの抽出**
+   - 必須項目の明確化
+   - 値の範囲・形式制約
+   - 一意性制約
+   - 関連性制約（外部キー、状態遷移）
+
+4. **APIマッピング**
+   - HTTPメソッド（GET/POST/PUT/DELETE）
+   - エンドポイント案
+   - リクエスト/レスポンス形式
+
+**対話的詳細化:**
+
+各ユースケースに対して、以下の質問を対話的に行います：
+- 「このユースケースでは、どのエンティティを作成/更新しますか？」
+- 「顧客を選択する際、どんな検索条件が必要ですか？」
+- 「プロジェクト名に制約はありますか？」
+- 「登録が失敗するのはどんな場合ですか？」
+
+**実行方法:**
+
+```bash
+/usecase-detailer {project_name}
+```
+
+このコマンドにより、`usecase.md` を読み込み、対話的に詳細化を行い、`usecase_detailed.md` を生成します。
+
+### ブラックボードへの出力
+
+`usecase_detailed.md` に以下の形式で書き込み:
+
+```markdown
+# ユースケース詳細仕様
+
+## UC-01: プロジェクト登録
+
+### 基本フロー
+1. **顧客選択**
+   - 検索条件: 顧客名（部分一致）、業界
+   - ソート: 顧客名昇順
+   - エラー: 顧客が存在しない場合 → 404 Customer Not Found
+
+2. **プロジェクト情報入力**
+   - 必須項目: プロジェクト名、予定開始日、契約金額
+   - 任意項目: 説明、開発種別
+   - バリデーション:
+     - プロジェクト名: 1-200文字
+     - 契約金額: 0以上
+     - 予定開始日: 今日以降
+
+3. **登録実行**
+   - Create: PROJECT レコード
+   - 重複チェック: 同一顧客×同一プロジェクト名 → 409 Conflict
+   - レスポンス: 201 Created + ProjectID
+
+### API マッピング
+- エンドポイント: POST /api/projects
+- Request Body: { customerID, projectName, plannedStartDate, contractAmount, description?, developmentTypeID? }
+- Success: 201 Created
+- Errors: 400 (バリデーション), 404 (顧客不存在), 409 (重複)
+```
+
+### 次フェーズへの遷移
+
+`state.yaml` を更新:
+```yaml
+current_phase: entity_extraction
+completed_phases:
+  - usecase_detailing
+```
+
+**スキップ判断:**
+
+- 詳細化が必要: ユースケースが抽象的（検索条件・エラーケース未定義）→ Phase 0.5を実行
+- スキップ可能: ユースケースが既に詳細（API設計に十分な情報）→ Phase 1へ直接進む
+
+詳細な実装は `/usecase-detailer` スキルを参照してください。
 
 ---
 
@@ -1636,6 +1751,454 @@ CREATE INDEX IDX_INVOICE_SEND_DATETIME ON INVOICE_SEND(SendDateTime);
 1. 生成されたDDLファイルのパス (`artifacts/{project_name}/schema.sql`)
 2. テーブル数とリレーションシップ数のサマリー
 3. 次のステップ（Docker環境でのテスト方法など）
+
+### 次フェーズへの遷移
+
+`state.yaml` を更新:
+```yaml
+current_phase: openapi_generation
+completed_phases:
+  - entity_extraction
+  - classification
+  - relationship_analysis
+  - validation
+  - diagram_generation
+  - ddl_generation
+```
+
+---
+
+## Phase 7: OpenAPI生成
+
+### 目的
+イミュータブルデータモデルから**CQRS準拠のOpenAPI 3.1.0仕様書**を完全自動生成します。
+ユースケース指向のAPI設計を実現し、単純なCRUD APIではなく実際のビジネスアクションに基づくエンドポイントを生成します。
+
+### ブラックボードからの入力
+- `entities_classified.json`（Phase 2で生成された分類済みエンティティ）
+- `model.json`（Phase 3で生成された関連情報）
+- `usecase_detailed.md`（Phase 0.5で生成、オプション）
+
+### 処理内容
+
+このフェーズは `/openapi-generator` スキルを使用して実行します。
+
+**OpenAPI生成の方針:**
+
+**1. イベント → POST/PUT マッピング**
+- イベントエンティティを意味のあるアクションAPIに変換
+- 命名パターンから適切なHTTPメソッドとエンドポイントを推論
+- Idempotency-Key ヘッダー必須（重複イベント防止）
+
+**マッピング例:**
+
+| イベント種別 | HTTPメソッド | エンドポイント例 |
+|------------|------------|----------------|
+| ProjectStart | POST | `/api/projects/{id}/start` |
+| PersonAssign | POST | `/api/projects/{id}/members` |
+| PersonReplace | PUT | `/api/projects/{id}/members/{memberId}/replace` |
+| RiskEvaluate | POST | `/api/projects/{id}/risks` |
+
+**2. リソース → GET マッピング**
+- リソースエンティティを取得APIに変換
+- 検索、フィルタ、ページネーション対応
+- 自動的にクエリパラメータを生成
+
+**CRUD エンドポイント:**
+- `GET /api/{resources}` - 一覧取得（検索・フィルタ・ページング）
+- `GET /api/{resources}/{id}` - 詳細取得
+- `POST /api/{resources}` - 新規作成（Createイベントと連携）
+- `PATCH /api/{resources}/{id}` - 部分更新
+- `DELETE /api/{resources}/{id}` - 削除
+
+**3. 状態集約 → GET マッピング**
+- イベントから現在状態を推論するクエリAPI
+- 4つのパターンを自動生成
+
+**状態集約パターン:**
+
+| パターン | エンドポイント例 | 説明 |
+|---------|----------------|------|
+| Latest State | `/api/projects/{id}/start/latest` | 最新のイベント取得 |
+| History | `/api/projects/{id}/start/history` | イベント履歴（時系列） |
+| Current Assignments | `/api/projects/{id}/members/current` | 現在の割当（置換済み除外） |
+| Summary | `/api/projects/{id}/risks/summary` | 集約統計情報 |
+
+**4. RFC 7807 準拠エラーレスポンス**
+- Problem Details 形式
+- 標準的なHTTPステータスコード（400, 401, 403, 404, 409, 422, 500）
+- 詳細なバリデーションエラー情報
+
+**エラーレスポンス例:**
+
+```json
+{
+  "type": "https://api.example.com/errors/validation-error",
+  "title": "Validation Error",
+  "status": 400,
+  "detail": "プロジェクト名は1-200文字で入力してください",
+  "instance": "/api/projects",
+  "errors": [
+    {
+      "field": "projectName",
+      "message": "1-200文字で入力してください",
+      "value": ""
+    }
+  ]
+}
+```
+
+**5. 検索・フィルタ・ページネーション**
+- エンティティ属性から自動的にクエリパラメータを生成
+
+**自動生成されるパラメータ:**
+- String属性 → 部分一致検索（`?projectName=keyword`）
+- 外部キー属性 → 完全一致フィルタ（`?customerID=123`）
+- Date属性 → 範囲検索（`?plannedStartDateFrom=2024-01-01&plannedStartDateTo=2024-12-31`）
+- ページング → `?limit=50&offset=0`
+- ソート → `?sort=projectName` または `?sort=-projectName`（降順）
+
+**実行方法:**
+
+```bash
+/openapi-generator {project_name}
+```
+
+このコマンドにより、`entities_classified.json` と `model.json` を読み込み、完全なOpenAPI 3.1.0仕様書を生成します。
+
+**生成プロセス:**
+
+1. **エンティティ分析**: リソース、イベント、ジャンクションに分類
+2. **リソースエンドポイント生成**: CRUD操作を自動生成
+3. **イベントエンドポイント生成**: アクションAPIを自動生成
+4. **状態集約エンドポイント生成**: 4パターンのクエリAPIを自動生成
+5. **スキーマ定義生成**: 全エンティティのJSONスキーマを生成
+6. **共通コンポーネント追加**: エラーレスポンス、パラメータ、ヘッダーを追加
+7. **OpenAPI仕様書出力**: YAML形式で出力
+
+### ブラックボードへの出力
+
+`openapi.yaml` に以下の形式で書き込み:
+
+```yaml
+openapi: 3.1.0
+info:
+  title: "project-record-system API"
+  version: "1.0.0"
+  description: |
+    イミュータブルデータモデルに基づくRESTful API仕様書
+
+    ## 設計原則
+    - **CQRS パターン**: Command（POST/PUT）とQuery（GET）を明確に分離
+    - **イベントソーシング**: 不変のイベントとして業務アクションを記録
+    - **Idempotency**: POST/PUTは必ずIdempotency-Keyヘッダーを使用
+    - **RFC 7807**: 標準化されたエラーレスポンス形式
+
+servers:
+  - url: https://api.example.com
+    description: Production
+  - url: https://api-staging.example.com
+    description: Staging
+
+paths:
+  # イベントエンドポイント（Actions）
+  /api/projects/{projectId}/start:
+    post:
+      summary: プロジェクトを開始する
+      operationId: startProject
+      tags:
+        - Projects
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+        - $ref: '#/components/parameters/IdempotencyKey'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProjectStartCommand'
+      responses:
+        '201':
+          description: プロジェクト開始成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectStartResponse'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+      security:
+        - BearerAuth: []
+
+  # リソースエンドポイント（CRUD）
+  /api/projects:
+    get:
+      summary: プロジェクト一覧を取得
+      operationId: listProjects
+      tags:
+        - Projects
+      parameters:
+        - name: projectName
+          in: query
+          schema:
+            type: string
+          description: プロジェクト名（部分一致）
+        - name: customerID
+          in: query
+          schema:
+            type: integer
+          description: 顧客IDでフィルタ
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 50
+            maximum: 500
+        - name: offset
+          in: query
+          schema:
+            type: integer
+            default: 0
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                  limit:
+                    type: integer
+                  offset:
+                    type: integer
+                  projects:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/Project'
+
+  # 状態集約エンドポイント
+  /api/projects/{projectId}/members/current:
+    get:
+      summary: プロジェクトの現在のアサイン状況を取得
+      description: |
+        プロジェクトの現在のメンバーアサイン状況を取得します。
+
+        置換済みのアサインを除外した現在のメンバー一覧を返します。
+
+        SQL例:
+        ```sql
+        SELECT pa.*, p.*
+        FROM PERSON_ASSIGN pa
+        JOIN PERSON p ON pa.PersonID = p.PersonID
+        WHERE pa.ProjectID = ?
+          AND NOT EXISTS (
+            SELECT 1 FROM PERSON_REPLACE pr
+            WHERE pr.ProjectID = pa.ProjectID
+              AND pr.OldPersonID = pa.PersonID
+          );
+        ```
+      operationId: getProjectCurrentMembers
+      tags:
+        - Projects
+        - Members
+      parameters:
+        - name: projectId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  projectID:
+                    type: integer
+                  currentMembers:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PersonAssign'
+
+components:
+  schemas:
+    Project:
+      type: object
+      required:
+        - projectID
+        - projectName
+      properties:
+        projectID:
+          type: integer
+          description: プロジェクトID
+        projectName:
+          type: string
+          maxLength: 200
+          description: プロジェクト名
+        customerID:
+          type: integer
+          description: 顧客ID
+        plannedStartDate:
+          type: string
+          format: date
+          description: 予定開始日
+        contractAmount:
+          type: number
+          description: 契約金額
+      description: プロジェクト
+
+    ProjectStartCommand:
+      type: object
+      required:
+        - startDateTime
+        - registeredBy
+      properties:
+        startDateTime:
+          type: string
+          format: date-time
+          description: 開始日時
+        registeredBy:
+          type: integer
+          description: 登録者のPersonID
+
+    ProblemDetails:
+      type: object
+      required:
+        - type
+        - title
+        - status
+      properties:
+        type:
+          type: string
+          format: uri
+          description: エラー種別を示すURI
+        title:
+          type: string
+          description: エラーの概要
+        status:
+          type: integer
+          description: HTTPステータスコード
+        detail:
+          type: string
+          description: エラーの詳細説明
+        instance:
+          type: string
+          format: uri
+          description: エラーが発生したエンドポイント
+        errors:
+          type: array
+          description: 詳細なバリデーションエラー
+          items:
+            type: object
+            properties:
+              field:
+                type: string
+              message:
+                type: string
+              value:
+                type: string
+
+  parameters:
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema:
+        type: string
+        format: uuid
+      description: |
+        冪等性キー（重複防止用UUID）
+
+        同じIdempotency-Keyでの再送信は、元のレスポンスを返します。
+        これにより、ネットワーク障害時の重複イベント記録を防止します。
+
+  responses:
+    BadRequest:
+      description: バリデーションエラー
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+
+    NotFound:
+      description: リソースが見つからない
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+
+    Conflict:
+      description: リソースの競合
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+security:
+  - BearerAuth: []
+```
+
+### 検証
+
+生成されたOpenAPI仕様書は以下の方法で検証できます：
+
+**1. OpenAPI Validator**
+```bash
+npm install -g @apidevtools/swagger-cli
+swagger-cli validate artifacts/{project_name}/openapi.yaml
+```
+
+**2. Swagger UI**
+```bash
+# Swagger UIで可視化
+docker run -p 8080:8080 -e SWAGGER_JSON=/openapi.yaml \
+  -v $(pwd)/artifacts/{project_name}/openapi.yaml:/openapi.yaml \
+  swaggerapi/swagger-ui
+```
+
+ブラウザで `http://localhost:8080` にアクセスして仕様書を確認できます。
+
+### 最終出力
+
+ユーザーに以下を表示:
+1. 生成されたOpenAPI仕様書のパス (`artifacts/{project_name}/openapi.yaml`)
+2. エンドポイント数のサマリー（リソース、イベント、状態集約別）
+3. 検証方法（OpenAPI Validator、Swagger UI）
+4. 次のステップ（モックサーバー構築、クライアントSDK生成など）
+
+### 次フェーズへの遷移
+
+`state.yaml` を更新:
+```yaml
+current_phase: completed
+completed_phases:
+  - entity_extraction
+  - classification
+  - relationship_analysis
+  - validation
+  - diagram_generation
+  - ddl_generation
+  - openapi_generation
+```
+
+詳細な実装は `/openapi-generator` スキルを参照してください。
 
 ---
 

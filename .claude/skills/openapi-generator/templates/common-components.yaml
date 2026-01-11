@@ -1,0 +1,620 @@
+# Common Components for OpenAPI 3.1.0
+#
+# This file contains reusable components that are shared across all endpoints:
+# - Standard error responses (RFC 7807)
+# - Common schemas (Pagination, ProblemDetails, etc.)
+# - Common parameters (Idempotency-Key, pagination, sorting, etc.)
+# - Common headers (rate limiting, etc.)
+
+components:
+  schemas:
+    # RFC 7807 Problem Details
+    ProblemDetails:
+      type: object
+      required:
+        - type
+        - title
+        - status
+      properties:
+        type:
+          type: string
+          format: uri
+          description: エラー種別を示すURI
+          example: https://api.example.com/errors/validation-error
+        title:
+          type: string
+          description: エラーの概要
+          example: Validation Error
+        status:
+          type: integer
+          description: HTTPステータスコード
+          example: 400
+        detail:
+          type: string
+          description: エラーの詳細説明
+          example: 必須項目が不足しています
+        instance:
+          type: string
+          format: uri
+          description: エラーが発生したリクエストURI
+          example: /api/projects
+      additionalProperties: true
+      description: RFC 7807 準拠のエラーレスポンス
+
+    # Validation Error (extends ProblemDetails)
+    ValidationError:
+      allOf:
+        - $ref: '#/components/schemas/ProblemDetails'
+        - type: object
+          properties:
+            errors:
+              type: array
+              description: 詳細なバリデーションエラー
+              items:
+                $ref: '#/components/schemas/ValidationErrorDetail'
+
+    ValidationErrorDetail:
+      type: object
+      required:
+        - field
+        - message
+      properties:
+        field:
+          type: string
+          description: エラーが発生したフィールド名
+          example: projectName
+        message:
+          type: string
+          description: エラーメッセージ
+          example: プロジェクト名は必須です
+        value:
+          description: 送信された値
+          nullable: true
+          example: null
+        constraint:
+          type: object
+          description: 制約条件
+          additionalProperties: true
+          example:
+            minLength: 1
+            maxLength: 200
+
+    # Pagination Response Wrapper
+    PaginatedResponse:
+      type: object
+      required:
+        - total
+        - limit
+        - offset
+      properties:
+        total:
+          type: integer
+          description: 総件数
+          example: 150
+        limit:
+          type: integer
+          description: 1ページあたりの件数
+          example: 50
+        offset:
+          type: integer
+          description: スキップした件数
+          example: 0
+      additionalProperties: true
+
+    # Common ID Type
+    ID:
+      type: integer
+      format: int64
+      minimum: 1
+      description: リソースID
+
+    # Common Timestamp
+    Timestamp:
+      type: string
+      format: date-time
+      description: ISO 8601形式の日時
+      example: "2026-01-11T10:00:00Z"
+
+    # Common Date
+    Date:
+      type: string
+      format: date
+      description: ISO 8601形式の日付
+      example: "2026-01-11"
+
+    # Idempotency Key
+    IdempotencyKey:
+      type: string
+      format: uuid
+      description: 冪等性キー（UUID v4）
+      example: "550e8400-e29b-41d4-a716-446655440000"
+
+  responses:
+    # 400 Bad Request
+    BadRequest:
+      description: バリデーションエラー
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ValidationError'
+          examples:
+            missingFields:
+              summary: 必須項目欠損
+              value:
+                type: https://api.example.com/errors/validation-error
+                title: Validation Error
+                status: 400
+                detail: 必須項目が不足しています
+                instance: /api/projects
+                errors:
+                  - field: projectName
+                    message: プロジェクト名は必須です
+                    value: null
+                  - field: customerID
+                    message: 顧客IDは必須です
+                    value: null
+            invalidFormat:
+              summary: 不正なフォーマット
+              value:
+                type: https://api.example.com/errors/validation-error
+                title: Validation Error
+                status: 400
+                detail: 日付フォーマットが不正です
+                instance: /api/projects
+                errors:
+                  - field: plannedStartDate
+                    message: YYYY-MM-DD 形式で入力してください
+                    value: "2026/01/01"
+            lengthConstraint:
+              summary: 文字数制限違反
+              value:
+                type: https://api.example.com/errors/validation-error
+                title: Validation Error
+                status: 400
+                detail: 文字数制限を超えています
+                instance: /api/projects
+                errors:
+                  - field: projectName
+                    message: プロジェクト名は1-200文字で入力してください
+                    value: "非常に長いプロジェクト名..."
+                    constraint:
+                      minLength: 1
+                      maxLength: 200
+                      actualLength: 250
+            rangeConstraint:
+              summary: 値の範囲外
+              value:
+                type: https://api.example.com/errors/validation-error
+                title: Validation Error
+                status: 400
+                detail: 値が許容範囲外です
+                instance: /api/projects
+                errors:
+                  - field: contractAmount
+                    message: 契約金額は0以上である必要があります
+                    value: -1000000
+                    constraint:
+                      minimum: 0
+
+    # 401 Unauthorized
+    Unauthorized:
+      description: 認証エラー
+      headers:
+        WWW-Authenticate:
+          schema:
+            type: string
+          description: 認証方式（Bearer）
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+          examples:
+            missingToken:
+              summary: トークン未提供
+              value:
+                type: https://api.example.com/errors/unauthorized
+                title: Unauthorized
+                status: 401
+                detail: 認証トークンが提供されていません。Authorization ヘッダーを追加してください。
+                instance: /api/projects/456
+            invalidToken:
+              summary: 無効なトークン
+              value:
+                type: https://api.example.com/errors/unauthorized
+                title: Unauthorized
+                status: 401
+                detail: 認証トークンが無効です。
+                instance: /api/projects/456
+            expiredToken:
+              summary: トークン期限切れ
+              value:
+                type: https://api.example.com/errors/token-expired
+                title: Token Expired
+                status: 401
+                detail: 認証トークンの有効期限が切れています。再ログインしてください。
+                instance: /api/projects/456
+                expiredAt: "2026-01-10T23:59:59Z"
+
+    # 403 Forbidden
+    Forbidden:
+      description: 権限エラー
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+          examples:
+            insufficientPermissions:
+              summary: 権限不足
+              value:
+                type: https://api.example.com/errors/forbidden
+                title: Forbidden
+                status: 403
+                detail: このリソースへのアクセス権限がありません
+                instance: /api/projects/456
+            roleRequired:
+              summary: ロール要件
+              value:
+                type: https://api.example.com/errors/forbidden
+                title: Forbidden
+                status: 403
+                detail: このプロジェクトを開始する権限がありません。プロジェクトマネージャーロールが必要です。
+                instance: /api/projects/456/start
+                requiredRole: PROJECT_MANAGER
+                userRole: ENGINEER
+            ownerOnly:
+              summary: オーナーのみ許可
+              value:
+                type: https://api.example.com/errors/forbidden
+                title: Forbidden
+                status: 403
+                detail: このプロジェクトを削除できるのはプロジェクトオーナーのみです。
+                instance: /api/projects/456
+                projectOwner: 10
+                currentUser: 5
+
+    # 404 Not Found
+    NotFound:
+      description: リソースが見つからない
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+          examples:
+            resourceNotFound:
+              summary: リソース不存在
+              value:
+                type: https://api.example.com/errors/not-found
+                title: Resource Not Found
+                status: 404
+                detail: 指定されたプロジェクトが見つかりません
+                instance: /api/projects/999
+                resourceType: Project
+                resourceId: 999
+            foreignKeyNotFound:
+              summary: 外部キーエラー
+              value:
+                type: https://api.example.com/errors/not-found
+                title: Resource Not Found
+                status: 404
+                detail: 指定された顧客が見つかりません
+                instance: /api/projects
+                field: customerID
+                value: 999
+                resourceType: Customer
+
+    # 409 Conflict
+    Conflict:
+      description: リソースの競合
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+          examples:
+            duplicateResource:
+              summary: 重複エラー
+              value:
+                type: https://api.example.com/errors/conflict
+                title: Resource Conflict
+                status: 409
+                detail: この顧客には既に同名のプロジェクトが存在します
+                instance: /api/projects
+                conflictFields: ["customerID", "projectName"]
+                conflictValues: [123, "新システム開発"]
+                existingResourceId: 456
+            idempotencyConflict:
+              summary: Idempotency-Key 重複
+              value:
+                type: https://api.example.com/errors/idempotency-conflict
+                title: Idempotency Key Conflict
+                status: 409
+                detail: この Idempotency-Key は既に使用されていますが、リクエスト内容が異なります
+                instance: /api/projects/456/start
+                idempotencyKey: "550e8400-e29b-41d4-a716-446655440000"
+            optimisticLock:
+              summary: 楽観的ロックエラー
+              value:
+                type: https://api.example.com/errors/optimistic-lock-error
+                title: Optimistic Lock Error
+                status: 409
+                detail: リソースが既に他のユーザーによって更新されています
+                instance: /api/projects/456
+                expectedVersion: 5
+                actualVersion: 6
+
+    # 422 Unprocessable Entity
+    UnprocessableEntity:
+      description: ビジネスルール違反
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+          examples:
+            stateTransitionError:
+              summary: 状態遷移エラー
+              value:
+                type: https://api.example.com/errors/invalid-state-transition
+                title: Invalid State Transition
+                status: 422
+                detail: 既に完了したプロジェクトは開始できません
+                instance: /api/projects/456/start
+                currentState: COMPLETED
+                requestedTransition: START
+                allowedTransitions: []
+            businessConstraintViolation:
+              summary: ビジネス制約違反
+              value:
+                type: https://api.example.com/errors/business-constraint-violation
+                title: Business Constraint Violation
+                status: 422
+                detail: 同一人物を同じプロジェクトに重複してアサインできません
+                instance: /api/projects/456/members
+                field: personID
+                value: 3
+                reason: "Person 3 is already assigned to this project"
+            dateConstraintViolation:
+              summary: 日付制約違反
+              value:
+                type: https://api.example.com/errors/date-constraint-violation
+                title: Date Constraint Violation
+                status: 422
+                detail: プロジェクト完了日は開始日より後である必要があります
+                instance: /api/projects/456/complete
+                field: completeDateTime
+                value: "2026-01-15T10:00:00Z"
+                constraint: "completeDateTime > startDateTime"
+                startDateTime: "2026-02-01T09:00:00Z"
+
+    # 429 Too Many Requests
+    TooManyRequests:
+      description: レート制限超過
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+          description: 再試行可能になるまでの秒数
+        X-RateLimit-Limit:
+          schema:
+            type: integer
+          description: レート制限の上限
+        X-RateLimit-Remaining:
+          schema:
+            type: integer
+          description: 残りリクエスト数
+        X-RateLimit-Reset:
+          schema:
+            type: integer
+          description: レート制限リセット時刻（Unixタイムスタンプ）
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+          examples:
+            rateLimitExceeded:
+              summary: レート制限超過
+              value:
+                type: https://api.example.com/errors/rate-limit-exceeded
+                title: Rate Limit Exceeded
+                status: 429
+                detail: リクエスト制限（100リクエスト/分）を超過しました。60秒後に再試行してください。
+                instance: /api/projects
+                rateLimit:
+                  limit: 100
+                  remaining: 0
+                  resetAt: "2026-01-11T10:00:00Z"
+
+    # 500 Internal Server Error
+    InternalServerError:
+      description: サーバー内部エラー
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+          examples:
+            serverError:
+              summary: サーバー内部エラー
+              value:
+                type: https://api.example.com/errors/internal-server-error
+                title: Internal Server Error
+                status: 500
+                detail: 予期しないエラーが発生しました。システム管理者に連絡してください。
+                instance: /api/projects/456/start
+                requestId: "req-12345"
+                timestamp: "2026-01-11T10:00:00Z"
+
+    # 503 Service Unavailable
+    ServiceUnavailable:
+      description: サービス一時停止
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+          description: サービス復旧予定時刻までの秒数
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+          examples:
+            maintenance:
+              summary: メンテナンス中
+              value:
+                type: https://api.example.com/errors/maintenance
+                title: Service Under Maintenance
+                status: 503
+                detail: システムメンテナンスのため、一時的にサービスを停止しています。1時間後に再試行してください。
+                instance: /api/projects
+                maintenanceWindow:
+                  start: "2026-01-11T10:00:00Z"
+                  end: "2026-01-11T11:00:00Z"
+            databaseUnavailable:
+              summary: データベース接続エラー
+              value:
+                type: https://api.example.com/errors/database-unavailable
+                title: Database Unavailable
+                status: 503
+                detail: データベースに接続できません。しばらくしてから再試行してください。
+                instance: /api/projects/456
+                requestId: "req-12345"
+
+  parameters:
+    # Idempotency-Key Header
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema:
+        $ref: '#/components/schemas/IdempotencyKey'
+      description: |
+        冪等性キー（UUID v4）
+
+        目的: ネットワーク障害時のリトライで重複イベント記録を防止
+
+        使用方法:
+        1. クライアント側でUUID v4を生成
+        2. 全POST/PUT操作にこのヘッダーを追加
+        3. リトライ時は同じキーを使用
+
+        サーバー動作:
+        - 同じキーで既にリクエスト処理済み → 既存レスポンスを返す（200 OK）
+        - 新しいキー → 処理を実行（201 Created）
+        - 同じキーで内容が異なる → 409 Conflict
+
+    # Pagination: Limit
+    Limit:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 500
+        default: 50
+      description: 1ページあたりの取得件数
+
+    # Pagination: Offset
+    Offset:
+      name: offset
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+      description: スキップする件数
+
+    # Sorting
+    Sort:
+      name: sort
+      in: query
+      required: false
+      schema:
+        type: string
+      description: |
+        ソート順を指定
+
+        構文:
+        - `field`: 昇順
+        - `-field`: 降順
+        - `field1,-field2`: 複数フィールド（カンマ区切り）
+
+        例:
+        - `sort=projectName`: プロジェクト名昇順
+        - `sort=-createdAt`: 作成日時降順
+        - `sort=-createdAt,projectName`: 作成日時降順、次にプロジェクト名昇順
+
+    # Path Parameter: ID
+    ResourceId:
+      name: id
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/ID'
+      description: リソースID
+
+  headers:
+    # Rate Limiting Headers
+    X-RateLimit-Limit:
+      description: レート制限の上限（リクエスト数/時間）
+      schema:
+        type: integer
+        example: 1000
+
+    X-RateLimit-Remaining:
+      description: 残りリクエスト数
+      schema:
+        type: integer
+        example: 950
+
+    X-RateLimit-Reset:
+      description: レート制限リセット時刻（Unixタイムスタンプ）
+      schema:
+        type: integer
+        format: int64
+        example: 1704967200
+
+    # Retry-After
+    Retry-After:
+      description: 再試行可能になるまでの秒数
+      schema:
+        type: integer
+        example: 60
+
+    # Request ID (for traceability)
+    X-Request-Id:
+      description: リクエストID（トレーサビリティ用）
+      schema:
+        type: string
+        format: uuid
+        example: "req-550e8400-e29b-41d4-a716-446655440000"
+
+  examples:
+    # Success Response Examples
+    SuccessCreated:
+      summary: 作成成功
+      value:
+        id: 456
+        createdAt: "2026-01-11T10:00:00Z"
+
+    SuccessUpdated:
+      summary: 更新成功
+      value:
+        id: 456
+        updatedAt: "2026-01-11T10:30:00Z"
+
+    SuccessDeleted:
+      summary: 削除成功（論理削除）
+      value:
+        id: 456
+        deletedAt: "2026-01-11T11:00:00Z"
+
+    # Pagination Example
+    PaginatedList:
+      summary: ページネーション付き一覧
+      value:
+        total: 150
+        limit: 50
+        offset: 0
+        items:
+          - id: 1
+            name: "Item 1"
+          - id: 2
+            name: "Item 2"
