@@ -1,0 +1,10 @@
+# Python dependencies for openapi-generator skill
+
+# YAML processing
+pyyaml>=6.0
+
+# JSON Schema validation (optional, for validating generated OpenAPI specs)
+jsonschema>=4.0
+
+# Dataclasses support (built-in for Python 3.7+, but explicitly listed for clarity)
+# dataclasses>=0.6  # Uncomment if using Python < 3.7

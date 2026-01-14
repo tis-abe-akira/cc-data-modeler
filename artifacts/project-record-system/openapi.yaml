@@ -1,0 +1,5509 @@
+openapi: 3.1.0
+info:
+  title: project-record-system API
+  version: 1.0.0
+  description: 'イミュータブルデータモデルに基づくRESTful API仕様書
+
+
+    このAPIは以下の原則に従います:
+
+    - **CQRS パターン**: Command（POST/PUT）とQuery（GET）の明確な分離
+
+    - **イベントソーシング**: 全ての状態変更をイベントとして記録
+
+    - **Idempotency**: 全POST/PUT操作にIdempotency-Keyヘッダーを必須化
+
+    - **RFC 7807**: Problem Details形式の統一されたエラーレスポンス
+
+
+    ## ユースケース指向API設計
+
+
+    このAPIは単純なCRUD操作ではなく、実際のビジネスユースケースに基づいて設計されています。
+
+
+    **例**: プロジェクト開始
+
+    - ❌ 単純なCRUD: `PUT /api/projects/{id}` (status: "IN_PROGRESS")
+
+    - ✅ ユースケース指向: `POST /api/projects/{id}/start`
+
+
+    ## 認証
+
+
+    全てのエンドポイントはBearer Token認証が必要です。
+
+
+    ```
+
+    Authorization: Bearer <your-token>
+
+    ```
+
+    '
+  contact:
+    name: API Support
+    email: api-support@example.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+servers:
+- url: https://api.example.com
+  description: Production Server
+- url: https://api-staging.example.com
+  description: Staging Server
+- url: http://localhost:3000
+  description: Local Development Server
+tags:
+- name: Approvals
+  description: Approvals関連のエンドポイント
+- name: Customers
+  description: Customers関連のエンドポイント
+- name: DevelopmentMethods
+  description: DevelopmentMethods関連のエンドポイント
+- name: DevelopmentTypes
+  description: DevelopmentTypes関連のエンドポイント
+- name: Events
+  description: Events関連のエンドポイント
+- name: Industries
+  description: Industries関連のエンドポイント
+- name: Organizations
+  description: Organizations関連のエンドポイント
+- name: Persons
+  description: Persons関連のエンドポイント
+- name: Projects
+  description: Projects関連のエンドポイント
+- name: Roles
+  description: Roles関連のエンドポイント
+- name: SupportTypes
+  description: SupportTypes関連のエンドポイント
+- name: TargetPhases
+  description: TargetPhases関連のエンドポイント
+- name: Users
+  description: Users関連のエンドポイント
+paths:
+  /api/projects:
+    get:
+      summary: Project一覧を取得
+      description: 'プロジェクトの一覧を取得します。
+
+
+        ページネーション、フィルタリング、ソートに対応しています。'
+      operationId: listProjects
+      tags:
+      - listProjects
+      - projects
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - total
+                - limit
+                - offset
+                - projects
+                properties:
+                  total:
+                    type: integer
+                    description: 総件数
+                    example: 150
+                  limit:
+                    type: integer
+                    description: 1ページあたりの件数
+                    example: 50
+                  offset:
+                    type: integer
+                    description: スキップした件数
+                    example: 0
+                  projects:
+                    type: array
+                    description: プロジェクトのリスト
+                    items:
+                      $ref: '#/components/schemas/Project'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      parameters:
+      - name: customerID
+        in: query
+        required: false
+        schema:
+          type: integer
+        description: 顧客IDでフィルタ
+      - name: plannedStartDateFrom
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+        description: 計画開始日範囲開始
+      - name: plannedStartDateTo
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+        description: 計画開始日範囲終了
+      - name: plannedEndDateFrom
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+        description: 計画終了日範囲開始
+      - name: plannedEndDateTo
+        in: query
+        required: false
+        schema:
+          type: string
+          format: date
+        description: 計画終了日範囲終了
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 500
+          default: 50
+        description: 1ページあたりの取得件数
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+        description: スキップする件数
+      - name: sort
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - projectName
+          - -projectName
+          - customerID
+          - -customerID
+          - estimatedEffort
+          - -estimatedEffort
+          - plannedStartDate
+          - -plannedStartDate
+          - plannedEndDate
+          - -plannedEndDate
+          - createdAt
+          - -createdAt
+          default: -createdAt
+        description: ソート順（-プレフィックスで降順）
+      security:
+      - BearerAuth: []
+    post:
+      summary: 新しいProjectを作成
+      description: プロジェクトを新規作成します。
+      operationId: createProject
+      tags:
+      - createProject
+      - projects
+      responses:
+        '201':
+          description: 作成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - projectName
+              - customerID
+              properties:
+                projectName:
+                  type: string
+                  description: プロジェクト名
+                customerID:
+                  type: integer
+                  description: 顧客ID
+                estimatedEffort:
+                  type: string
+                  description: 受注規模
+                plannedStartDate:
+                  type: string
+                  description: 計画開始日
+                  format: date
+                plannedEndDate:
+                  type: string
+                  description: 計画終了日
+                  format: date
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      security:
+      - BearerAuth: []
+  /api/projects/{projectID}:
+    get:
+      summary: Project詳細を取得
+      description: プロジェクトの詳細情報を取得します。
+      operationId: getProject
+      tags:
+      - getProject
+      - projects
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - BearerAuth: []
+    patch:
+      summary: Project情報を部分更新
+      description: 'プロジェクトの情報を部分更新します。
+
+
+        更新したいフィールドのみ指定してください。'
+      operationId: updateProject
+      tags:
+      - updateProject
+      - projects
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Project'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                projectName:
+                  type: string
+                  description: プロジェクト名
+                customerID:
+                  type: integer
+                  description: 顧客ID
+                estimatedEffort:
+                  type: string
+                  description: 受注規模
+                plannedStartDate:
+                  type: string
+                  description: 計画開始日
+                  format: date
+                plannedEndDate:
+                  type: string
+                  description: 計画終了日
+                  format: date
+              description: 更新したいフィールドのみ指定
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      security:
+      - BearerAuth: []
+    delete:
+      summary: Projectを削除
+      description: 'プロジェクトを削除します（論理削除）。
+
+
+        イミュータブルデータモデルでは物理削除を行わず、DeletedAtフィールドに現在時刻を記録します。'
+      operationId: deleteProject
+      tags:
+      - deleteProject
+      - projects
+      responses:
+        '204':
+          description: 削除成功
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - BearerAuth: []
+  /api/persons:
+    get:
+      summary: Person一覧を取得
+      description: '人の一覧を取得します。
+
+
+        ページネーション、フィルタリング、ソートに対応しています。'
+      operationId: listPersons
+      tags:
+      - listPersons
+      - persons
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - total
+                - limit
+                - offset
+                - persons
+                properties:
+                  total:
+                    type: integer
+                    description: 総件数
+                    example: 150
+                  limit:
+                    type: integer
+                    description: 1ページあたりの件数
+                    example: 50
+                  offset:
+                    type: integer
+                    description: スキップした件数
+                    example: 0
+                  persons:
+                    type: array
+                    description: 人のリスト
+                    items:
+                      $ref: '#/components/schemas/Person'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 500
+          default: 50
+        description: 1ページあたりの取得件数
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+        description: スキップする件数
+      - name: sort
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - name
+          - -name
+          - email
+          - -email
+          - createdAt
+          - -createdAt
+          default: -createdAt
+        description: ソート順（-プレフィックスで降順）
+      security:
+      - BearerAuth: []
+    post:
+      summary: 新しいPersonを作成
+      description: 人を新規作成します。
+      operationId: createPerson
+      tags:
+      - createPerson
+      - persons
+      responses:
+        '201':
+          description: 作成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - name
+              properties:
+                name:
+                  type: string
+                  description: 氏名
+                email:
+                  type: string
+                  description: メールアドレス
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      security:
+      - BearerAuth: []
+  /api/persons/{personID}:
+    get:
+      summary: Person詳細を取得
+      description: 人の詳細情報を取得します。
+      operationId: getPerson
+      tags:
+      - getPerson
+      - persons
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - BearerAuth: []
+    patch:
+      summary: Person情報を部分更新
+      description: '人の情報を部分更新します。
+
+
+        更新したいフィールドのみ指定してください。'
+      operationId: updatePerson
+      tags:
+      - updatePerson
+      - persons
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Person'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: 氏名
+                email:
+                  type: string
+                  description: メールアドレス
+              description: 更新したいフィールドのみ指定
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      security:
+      - BearerAuth: []
+    delete:
+      summary: Personを削除
+      description: '人を削除します（論理削除）。
+
+
+        イミュータブルデータモデルでは物理削除を行わず、DeletedAtフィールドに現在時刻を記録します。'
+      operationId: deletePerson
+      tags:
+      - deletePerson
+      - persons
+      responses:
+        '204':
+          description: 削除成功
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - BearerAuth: []
+  /api/organizations:
+    get:
+      summary: Organization一覧を取得
+      description: '組織の一覧を取得します。
+
+
+        ページネーション、フィルタリング、ソートに対応しています。'
+      operationId: listOrganizations
+      tags:
+      - listOrganizations
+      - organizations
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - total
+                - limit
+                - offset
+                - organizations
+                properties:
+                  total:
+                    type: integer
+                    description: 総件数
+                    example: 150
+                  limit:
+                    type: integer
+                    description: 1ページあたりの件数
+                    example: 50
+                  offset:
+                    type: integer
+                    description: スキップした件数
+                    example: 0
+                  organizations:
+                    type: array
+                    description: 組織のリスト
+                    items:
+                      $ref: '#/components/schemas/Organization'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      parameters:
+      - name: parentOrganizationID
+        in: query
+        required: false
+        schema:
+          type: integer
+        description: 親組織IDでフィルタ
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 500
+          default: 50
+        description: 1ページあたりの取得件数
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+        description: スキップする件数
+      - name: sort
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - organizationName
+          - -organizationName
+          - organizationType
+          - -organizationType
+          - parentOrganizationID
+          - -parentOrganizationID
+          - createdAt
+          - -createdAt
+          default: -createdAt
+        description: ソート順（-プレフィックスで降順）
+      security:
+      - BearerAuth: []
+    post:
+      summary: 新しいOrganizationを作成
+      description: 組織を新規作成します。
+      operationId: createOrganization
+      tags:
+      - createOrganization
+      - organizations
+      responses:
+        '201':
+          description: 作成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - organizationName
+              - parentOrganizationID
+              properties:
+                organizationName:
+                  type: string
+                  description: 組織名
+                organizationType:
+                  type: string
+                  description: 組織種別
+                parentOrganizationID:
+                  type: integer
+                  description: 親組織ID
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      security:
+      - BearerAuth: []
+  /api/organizations/{organizationID}:
+    get:
+      summary: Organization詳細を取得
+      description: 組織の詳細情報を取得します。
+      operationId: getOrganization
+      tags:
+      - getOrganization
+      - organizations
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - BearerAuth: []
+    patch:
+      summary: Organization情報を部分更新
+      description: '組織の情報を部分更新します。
+
+
+        更新したいフィールドのみ指定してください。'
+      operationId: updateOrganization
+      tags:
+      - updateOrganization
+      - organizations
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Organization'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                organizationName:
+                  type: string
+                  description: 組織名
+                organizationType:
+                  type: string
+                  description: 組織種別
+                parentOrganizationID:
+                  type: integer
+                  description: 親組織ID
+              description: 更新したいフィールドのみ指定
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      security:
+      - BearerAuth: []
+    delete:
+      summary: Organizationを削除
+      description: '組織を削除します（論理削除）。
+
+
+        イミュータブルデータモデルでは物理削除を行わず、DeletedAtフィールドに現在時刻を記録します。'
+      operationId: deleteOrganization
+      tags:
+      - deleteOrganization
+      - organizations
+      responses:
+        '204':
+          description: 削除成功
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - BearerAuth: []
+  /api/customers:
+    get:
+      summary: Customer一覧を取得
+      description: '顧客の一覧を取得します。
+
+
+        ページネーション、フィルタリング、ソートに対応しています。'
+      operationId: listCustomers
+      tags:
+      - listCustomers
+      - customers
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - total
+                - limit
+                - offset
+                - customers
+                properties:
+                  total:
+                    type: integer
+                    description: 総件数
+                    example: 150
+                  limit:
+                    type: integer
+                    description: 1ページあたりの件数
+                    example: 50
+                  offset:
+                    type: integer
+                    description: スキップした件数
+                    example: 0
+                  customers:
+                    type: array
+                    description: 顧客のリスト
+                    items:
+                      $ref: '#/components/schemas/Customer'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      parameters:
+      - name: industryID
+        in: query
+        required: false
+        schema:
+          type: integer
+        description: 業界IDでフィルタ
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 500
+          default: 50
+        description: 1ページあたりの取得件数
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+        description: スキップする件数
+      - name: sort
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - customerName
+          - -customerName
+          - industryID
+          - -industryID
+          - createdAt
+          - -createdAt
+          default: -createdAt
+        description: ソート順（-プレフィックスで降順）
+      security:
+      - BearerAuth: []
+    post:
+      summary: 新しいCustomerを作成
+      description: 顧客を新規作成します。
+      operationId: createCustomer
+      tags:
+      - createCustomer
+      - customers
+      responses:
+        '201':
+          description: 作成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - customerName
+              - industryID
+              properties:
+                customerName:
+                  type: string
+                  description: 顧客名
+                industryID:
+                  type: integer
+                  description: 業界ID
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      security:
+      - BearerAuth: []
+  /api/customers/{customerID}:
+    get:
+      summary: Customer詳細を取得
+      description: 顧客の詳細情報を取得します。
+      operationId: getCustomer
+      tags:
+      - getCustomer
+      - customers
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - BearerAuth: []
+    patch:
+      summary: Customer情報を部分更新
+      description: '顧客の情報を部分更新します。
+
+
+        更新したいフィールドのみ指定してください。'
+      operationId: updateCustomer
+      tags:
+      - updateCustomer
+      - customers
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                customerName:
+                  type: string
+                  description: 顧客名
+                industryID:
+                  type: integer
+                  description: 業界ID
+              description: 更新したいフィールドのみ指定
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      security:
+      - BearerAuth: []
+    delete:
+      summary: Customerを削除
+      description: '顧客を削除します（論理削除）。
+
+
+        イミュータブルデータモデルでは物理削除を行わず、DeletedAtフィールドに現在時刻を記録します。'
+      operationId: deleteCustomer
+      tags:
+      - deleteCustomer
+      - customers
+      responses:
+        '204':
+          description: 削除成功
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - BearerAuth: []
+  /api/industries:
+    get:
+      summary: Industry一覧を取得
+      description: '業界の一覧を取得します。
+
+
+        ページネーション、フィルタリング、ソートに対応しています。'
+      operationId: listIndustrys
+      tags:
+      - listIndustrys
+      - industries
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - total
+                - limit
+                - offset
+                - industries
+                properties:
+                  total:
+                    type: integer
+                    description: 総件数
+                    example: 150
+                  limit:
+                    type: integer
+                    description: 1ページあたりの件数
+                    example: 50
+                  offset:
+                    type: integer
+                    description: スキップした件数
+                    example: 0
+                  industries:
+                    type: array
+                    description: 業界のリスト
+                    items:
+                      $ref: '#/components/schemas/Industry'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 500
+          default: 50
+        description: 1ページあたりの取得件数
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+        description: スキップする件数
+      - name: sort
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - industryName
+          - -industryName
+          - createdAt
+          - -createdAt
+          default: -createdAt
+        description: ソート順（-プレフィックスで降順）
+      security:
+      - BearerAuth: []
+    post:
+      summary: 新しいIndustryを作成
+      description: 業界を新規作成します。
+      operationId: createIndustry
+      tags:
+      - createIndustry
+      - industries
+      responses:
+        '201':
+          description: 作成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Industry'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - industryName
+              properties:
+                industryName:
+                  type: string
+                  description: 業界名
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      security:
+      - BearerAuth: []
+  /api/industries/{industryID}:
+    get:
+      summary: Industry詳細を取得
+      description: 業界の詳細情報を取得します。
+      operationId: getIndustry
+      tags:
+      - getIndustry
+      - industries
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Industry'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - BearerAuth: []
+    patch:
+      summary: Industry情報を部分更新
+      description: '業界の情報を部分更新します。
+
+
+        更新したいフィールドのみ指定してください。'
+      operationId: updateIndustry
+      tags:
+      - updateIndustry
+      - industries
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Industry'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                industryName:
+                  type: string
+                  description: 業界名
+              description: 更新したいフィールドのみ指定
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      security:
+      - BearerAuth: []
+    delete:
+      summary: Industryを削除
+      description: '業界を削除します（論理削除）。
+
+
+        イミュータブルデータモデルでは物理削除を行わず、DeletedAtフィールドに現在時刻を記録します。'
+      operationId: deleteIndustry
+      tags:
+      - deleteIndustry
+      - industries
+      responses:
+        '204':
+          description: 削除成功
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - BearerAuth: []
+  /api/roles:
+    get:
+      summary: Role一覧を取得
+      description: '役割の一覧を取得します。
+
+
+        ページネーション、フィルタリング、ソートに対応しています。'
+      operationId: listRoles
+      tags:
+      - listRoles
+      - roles
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - total
+                - limit
+                - offset
+                - roles
+                properties:
+                  total:
+                    type: integer
+                    description: 総件数
+                    example: 150
+                  limit:
+                    type: integer
+                    description: 1ページあたりの件数
+                    example: 50
+                  offset:
+                    type: integer
+                    description: スキップした件数
+                    example: 0
+                  roles:
+                    type: array
+                    description: 役割のリスト
+                    items:
+                      $ref: '#/components/schemas/Role'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 500
+          default: 50
+        description: 1ページあたりの取得件数
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+        description: スキップする件数
+      - name: sort
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - roleName
+          - -roleName
+          - createdAt
+          - -createdAt
+          default: -createdAt
+        description: ソート順（-プレフィックスで降順）
+      security:
+      - BearerAuth: []
+    post:
+      summary: 新しいRoleを作成
+      description: 役割を新規作成します。
+      operationId: createRole
+      tags:
+      - createRole
+      - roles
+      responses:
+        '201':
+          description: 作成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - roleName
+              properties:
+                roleName:
+                  type: string
+                  description: 役割名
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      security:
+      - BearerAuth: []
+  /api/roles/{roleID}:
+    get:
+      summary: Role詳細を取得
+      description: 役割の詳細情報を取得します。
+      operationId: getRole
+      tags:
+      - getRole
+      - roles
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - BearerAuth: []
+    patch:
+      summary: Role情報を部分更新
+      description: '役割の情報を部分更新します。
+
+
+        更新したいフィールドのみ指定してください。'
+      operationId: updateRole
+      tags:
+      - updateRole
+      - roles
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Role'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                roleName:
+                  type: string
+                  description: 役割名
+              description: 更新したいフィールドのみ指定
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      security:
+      - BearerAuth: []
+    delete:
+      summary: Roleを削除
+      description: '役割を削除します（論理削除）。
+
+
+        イミュータブルデータモデルでは物理削除を行わず、DeletedAtフィールドに現在時刻を記録します。'
+      operationId: deleteRole
+      tags:
+      - deleteRole
+      - roles
+      responses:
+        '204':
+          description: 削除成功
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - BearerAuth: []
+  /api/support_types:
+    get:
+      summary: SupportType一覧を取得
+      description: '支援タイプの一覧を取得します。
+
+
+        ページネーション、フィルタリング、ソートに対応しています。'
+      operationId: listSupportTypes
+      tags:
+      - listSupportTypes
+      - support_types
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - total
+                - limit
+                - offset
+                - support_types
+                properties:
+                  total:
+                    type: integer
+                    description: 総件数
+                    example: 150
+                  limit:
+                    type: integer
+                    description: 1ページあたりの件数
+                    example: 50
+                  offset:
+                    type: integer
+                    description: スキップした件数
+                    example: 0
+                  support_types:
+                    type: array
+                    description: 支援タイプのリスト
+                    items:
+                      $ref: '#/components/schemas/SupportType'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      parameters:
+      - name: description
+        in: query
+        required: false
+        schema:
+          type: string
+        description: 説明（部分一致）
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 500
+          default: 50
+        description: 1ページあたりの取得件数
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+        description: スキップする件数
+      - name: sort
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - supportTypeName
+          - -supportTypeName
+          - description
+          - -description
+          - createdAt
+          - -createdAt
+          default: -createdAt
+        description: ソート順（-プレフィックスで降順）
+      security:
+      - BearerAuth: []
+    post:
+      summary: 新しいSupportTypeを作成
+      description: 支援タイプを新規作成します。
+      operationId: createSupportType
+      tags:
+      - createSupportType
+      - support_types
+      responses:
+        '201':
+          description: 作成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupportType'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - supportTypeName
+              properties:
+                supportTypeName:
+                  type: string
+                  description: 支援タイプ名
+                description:
+                  type: string
+                  description: 説明
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      security:
+      - BearerAuth: []
+  /api/support_types/{supportTypeID}:
+    get:
+      summary: SupportType詳細を取得
+      description: 支援タイプの詳細情報を取得します。
+      operationId: getSupportType
+      tags:
+      - getSupportType
+      - support_types
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupportType'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - BearerAuth: []
+    patch:
+      summary: SupportType情報を部分更新
+      description: '支援タイプの情報を部分更新します。
+
+
+        更新したいフィールドのみ指定してください。'
+      operationId: updateSupportType
+      tags:
+      - updateSupportType
+      - support_types
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupportType'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                supportTypeName:
+                  type: string
+                  description: 支援タイプ名
+                description:
+                  type: string
+                  description: 説明
+              description: 更新したいフィールドのみ指定
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      security:
+      - BearerAuth: []
+    delete:
+      summary: SupportTypeを削除
+      description: '支援タイプを削除します（論理削除）。
+
+
+        イミュータブルデータモデルでは物理削除を行わず、DeletedAtフィールドに現在時刻を記録します。'
+      operationId: deleteSupportType
+      tags:
+      - deleteSupportType
+      - support_types
+      responses:
+        '204':
+          description: 削除成功
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - BearerAuth: []
+  /api/users:
+    get:
+      summary: User一覧を取得
+      description: 'ユーザーの一覧を取得します。
+
+
+        ページネーション、フィルタリング、ソートに対応しています。'
+      operationId: listUsers
+      tags:
+      - listUsers
+      - users
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - total
+                - limit
+                - offset
+                - users
+                properties:
+                  total:
+                    type: integer
+                    description: 総件数
+                    example: 150
+                  limit:
+                    type: integer
+                    description: 1ページあたりの件数
+                    example: 50
+                  offset:
+                    type: integer
+                    description: スキップした件数
+                    example: 0
+                  users:
+                    type: array
+                    description: ユーザーのリスト
+                    items:
+                      $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      parameters:
+      - name: personID
+        in: query
+        required: false
+        schema:
+          type: integer
+        description: 人IDでフィルタ
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 500
+          default: 50
+        description: 1ページあたりの取得件数
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+        description: スキップする件数
+      - name: sort
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - personID
+          - -personID
+          - username
+          - -username
+          - createdAt
+          - -createdAt
+          default: -createdAt
+        description: ソート順（-プレフィックスで降順）
+      security:
+      - BearerAuth: []
+    post:
+      summary: 新しいUserを作成
+      description: ユーザーを新規作成します。
+      operationId: createUser
+      tags:
+      - createUser
+      - users
+      responses:
+        '201':
+          description: 作成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - personID
+              - username
+              properties:
+                personID:
+                  type: integer
+                  description: 人ID
+                username:
+                  type: string
+                  description: ユーザー名
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      security:
+      - BearerAuth: []
+  /api/users/{userID}:
+    get:
+      summary: User詳細を取得
+      description: ユーザーの詳細情報を取得します。
+      operationId: getUser
+      tags:
+      - getUser
+      - users
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - BearerAuth: []
+    patch:
+      summary: User情報を部分更新
+      description: 'ユーザーの情報を部分更新します。
+
+
+        更新したいフィールドのみ指定してください。'
+      operationId: updateUser
+      tags:
+      - updateUser
+      - users
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                personID:
+                  type: integer
+                  description: 人ID
+                username:
+                  type: string
+                  description: ユーザー名
+              description: 更新したいフィールドのみ指定
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      security:
+      - BearerAuth: []
+    delete:
+      summary: Userを削除
+      description: 'ユーザーを削除します（論理削除）。
+
+
+        イミュータブルデータモデルでは物理削除を行わず、DeletedAtフィールドに現在時刻を記録します。'
+      operationId: deleteUser
+      tags:
+      - deleteUser
+      - users
+      responses:
+        '204':
+          description: 削除成功
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - BearerAuth: []
+  /api/development_types:
+    get:
+      summary: DevelopmentType一覧を取得
+      description: '開発種別の一覧を取得します。
+
+
+        ページネーション、フィルタリング、ソートに対応しています。'
+      operationId: listDevelopmentTypes
+      tags:
+      - listDevelopmentTypes
+      - development_types
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - total
+                - limit
+                - offset
+                - development_types
+                properties:
+                  total:
+                    type: integer
+                    description: 総件数
+                    example: 150
+                  limit:
+                    type: integer
+                    description: 1ページあたりの件数
+                    example: 50
+                  offset:
+                    type: integer
+                    description: スキップした件数
+                    example: 0
+                  development_types:
+                    type: array
+                    description: 開発種別のリスト
+                    items:
+                      $ref: '#/components/schemas/DevelopmentType'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      parameters:
+      - name: description
+        in: query
+        required: false
+        schema:
+          type: string
+        description: 説明（部分一致）
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 500
+          default: 50
+        description: 1ページあたりの取得件数
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+        description: スキップする件数
+      - name: sort
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - developmentTypeName
+          - -developmentTypeName
+          - description
+          - -description
+          - createdAt
+          - -createdAt
+          default: -createdAt
+        description: ソート順（-プレフィックスで降順）
+      security:
+      - BearerAuth: []
+    post:
+      summary: 新しいDevelopmentTypeを作成
+      description: 開発種別を新規作成します。
+      operationId: createDevelopmentType
+      tags:
+      - createDevelopmentType
+      - development_types
+      responses:
+        '201':
+          description: 作成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DevelopmentType'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - developmentTypeName
+              properties:
+                developmentTypeName:
+                  type: string
+                  description: 開発種別名
+                description:
+                  type: string
+                  description: 説明
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      security:
+      - BearerAuth: []
+  /api/development_types/{developmentTypeID}:
+    get:
+      summary: DevelopmentType詳細を取得
+      description: 開発種別の詳細情報を取得します。
+      operationId: getDevelopmentType
+      tags:
+      - getDevelopmentType
+      - development_types
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DevelopmentType'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - BearerAuth: []
+    patch:
+      summary: DevelopmentType情報を部分更新
+      description: '開発種別の情報を部分更新します。
+
+
+        更新したいフィールドのみ指定してください。'
+      operationId: updateDevelopmentType
+      tags:
+      - updateDevelopmentType
+      - development_types
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DevelopmentType'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                developmentTypeName:
+                  type: string
+                  description: 開発種別名
+                description:
+                  type: string
+                  description: 説明
+              description: 更新したいフィールドのみ指定
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      security:
+      - BearerAuth: []
+    delete:
+      summary: DevelopmentTypeを削除
+      description: '開発種別を削除します（論理削除）。
+
+
+        イミュータブルデータモデルでは物理削除を行わず、DeletedAtフィールドに現在時刻を記録します。'
+      operationId: deleteDevelopmentType
+      tags:
+      - deleteDevelopmentType
+      - development_types
+      responses:
+        '204':
+          description: 削除成功
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - BearerAuth: []
+  /api/development_methods:
+    get:
+      summary: DevelopmentMethod一覧を取得
+      description: '開発方式の一覧を取得します。
+
+
+        ページネーション、フィルタリング、ソートに対応しています。'
+      operationId: listDevelopmentMethods
+      tags:
+      - listDevelopmentMethods
+      - development_methods
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - total
+                - limit
+                - offset
+                - development_methods
+                properties:
+                  total:
+                    type: integer
+                    description: 総件数
+                    example: 150
+                  limit:
+                    type: integer
+                    description: 1ページあたりの件数
+                    example: 50
+                  offset:
+                    type: integer
+                    description: スキップした件数
+                    example: 0
+                  development_methods:
+                    type: array
+                    description: 開発方式のリスト
+                    items:
+                      $ref: '#/components/schemas/DevelopmentMethod'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      parameters:
+      - name: description
+        in: query
+        required: false
+        schema:
+          type: string
+        description: 説明（部分一致）
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 500
+          default: 50
+        description: 1ページあたりの取得件数
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+        description: スキップする件数
+      - name: sort
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - developmentMethodName
+          - -developmentMethodName
+          - description
+          - -description
+          - createdAt
+          - -createdAt
+          default: -createdAt
+        description: ソート順（-プレフィックスで降順）
+      security:
+      - BearerAuth: []
+    post:
+      summary: 新しいDevelopmentMethodを作成
+      description: 開発方式を新規作成します。
+      operationId: createDevelopmentMethod
+      tags:
+      - createDevelopmentMethod
+      - development_methods
+      responses:
+        '201':
+          description: 作成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DevelopmentMethod'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - developmentMethodName
+              properties:
+                developmentMethodName:
+                  type: string
+                  description: 開発方式名
+                description:
+                  type: string
+                  description: 説明
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      security:
+      - BearerAuth: []
+  /api/development_methods/{developmentMethodID}:
+    get:
+      summary: DevelopmentMethod詳細を取得
+      description: 開発方式の詳細情報を取得します。
+      operationId: getDevelopmentMethod
+      tags:
+      - getDevelopmentMethod
+      - development_methods
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DevelopmentMethod'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - BearerAuth: []
+    patch:
+      summary: DevelopmentMethod情報を部分更新
+      description: '開発方式の情報を部分更新します。
+
+
+        更新したいフィールドのみ指定してください。'
+      operationId: updateDevelopmentMethod
+      tags:
+      - updateDevelopmentMethod
+      - development_methods
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DevelopmentMethod'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                developmentMethodName:
+                  type: string
+                  description: 開発方式名
+                description:
+                  type: string
+                  description: 説明
+              description: 更新したいフィールドのみ指定
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      security:
+      - BearerAuth: []
+    delete:
+      summary: DevelopmentMethodを削除
+      description: '開発方式を削除します（論理削除）。
+
+
+        イミュータブルデータモデルでは物理削除を行わず、DeletedAtフィールドに現在時刻を記録します。'
+      operationId: deleteDevelopmentMethod
+      tags:
+      - deleteDevelopmentMethod
+      - development_methods
+      responses:
+        '204':
+          description: 削除成功
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - BearerAuth: []
+  /api/target_phases:
+    get:
+      summary: TargetPhase一覧を取得
+      description: '対象工程の一覧を取得します。
+
+
+        ページネーション、フィルタリング、ソートに対応しています。'
+      operationId: listTargetPhases
+      tags:
+      - listTargetPhases
+      - target_phases
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                - total
+                - limit
+                - offset
+                - target_phases
+                properties:
+                  total:
+                    type: integer
+                    description: 総件数
+                    example: 150
+                  limit:
+                    type: integer
+                    description: 1ページあたりの件数
+                    example: 50
+                  offset:
+                    type: integer
+                    description: スキップした件数
+                    example: 0
+                  target_phases:
+                    type: array
+                    description: 対象工程のリスト
+                    items:
+                      $ref: '#/components/schemas/TargetPhase'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      parameters:
+      - name: description
+        in: query
+        required: false
+        schema:
+          type: string
+        description: 説明（部分一致）
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 500
+          default: 50
+        description: 1ページあたりの取得件数
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+        description: スキップする件数
+      - name: sort
+        in: query
+        required: false
+        schema:
+          type: string
+          enum:
+          - targetPhaseName
+          - -targetPhaseName
+          - description
+          - -description
+          - createdAt
+          - -createdAt
+          default: -createdAt
+        description: ソート順（-プレフィックスで降順）
+      security:
+      - BearerAuth: []
+    post:
+      summary: 新しいTargetPhaseを作成
+      description: 対象工程を新規作成します。
+      operationId: createTargetPhase
+      tags:
+      - createTargetPhase
+      - target_phases
+      responses:
+        '201':
+          description: 作成成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TargetPhase'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - targetPhaseName
+              properties:
+                targetPhaseName:
+                  type: string
+                  description: 対象工程名
+                description:
+                  type: string
+                  description: 説明
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      security:
+      - BearerAuth: []
+  /api/target_phases/{targetPhaseID}:
+    get:
+      summary: TargetPhase詳細を取得
+      description: 対象工程の詳細情報を取得します。
+      operationId: getTargetPhase
+      tags:
+      - getTargetPhase
+      - target_phases
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TargetPhase'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - BearerAuth: []
+    patch:
+      summary: TargetPhase情報を部分更新
+      description: '対象工程の情報を部分更新します。
+
+
+        更新したいフィールドのみ指定してください。'
+      operationId: updateTargetPhase
+      tags:
+      - updateTargetPhase
+      - target_phases
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TargetPhase'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                targetPhaseName:
+                  type: string
+                  description: 対象工程名
+                description:
+                  type: string
+                  description: 説明
+              description: 更新したいフィールドのみ指定
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      security:
+      - BearerAuth: []
+    delete:
+      summary: TargetPhaseを削除
+      description: '対象工程を削除します（論理削除）。
+
+
+        イミュータブルデータモデルでは物理削除を行わず、DeletedAtフィールドに現在時刻を記録します。'
+      operationId: deleteTargetPhase
+      tags:
+      - deleteTargetPhase
+      - target_phases
+      responses:
+        '204':
+          description: 削除成功
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - BearerAuth: []
+  /api/projects/{id}/start:
+    post:
+      summary: Projectを開始する
+      description: 'プロジェクト開始イベントを記録します。
+
+
+        このエンドポイントはProjectリソースの開始を記録するビジネスイベントです。'
+      operationId: startProject
+      tags:
+      - startProject
+      - projects
+      responses:
+        '201':
+          description: 作成成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  eventID:
+                    type: integer
+                    description: イベントID
+                  projectID:
+                    type: integer
+                    description: プロジェクトID
+                  startDateTime:
+                    type: string
+                    description: 開始日時
+                    format: date-time
+                  registeredBy:
+                    type: integer
+                    description: 登録者ID
+                  createdAt:
+                    type: string
+                    format: date-time
+                    description: イベント記録日時
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - startDateTime
+              - registeredBy
+              properties:
+                startDateTime:
+                  type: string
+                  description: 開始日時
+                  format: date-time
+                registeredBy:
+                  type: integer
+                  description: 登録者ID
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      security:
+      - BearerAuth: []
+  /api/projects/{id}/events:
+    post:
+      summary: 支援実施を記録する
+      description: 支援実施イベントを記録します。
+      operationId: recordSupportExecute
+      tags:
+      - recordSupportExecute
+      - projects
+      responses:
+        '201':
+          description: 作成成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  eventID:
+                    type: integer
+                    description: イベントID
+                  projectID:
+                    type: integer
+                    description: プロジェクトID
+                  supportTypeID:
+                    type: integer
+                    description: 支援タイプID
+                  supportPersonID:
+                    type: integer
+                    description: 支援担当者ID
+                  executeDateTime:
+                    type: string
+                    description: 実施日時
+                    format: date-time
+                  supportContent:
+                    type: string
+                    description: 支援内容
+                  outcome:
+                    type: string
+                    description: 成果
+                  memo:
+                    type: string
+                    description: メモ
+                  createdAt:
+                    type: string
+                    format: date-time
+                    description: イベント記録日時
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - supportTypeID
+              - supportPersonID
+              - executeDateTime
+              - supportContent
+              - outcome
+              - memo
+              properties:
+                supportTypeID:
+                  type: integer
+                  description: 支援タイプID
+                supportPersonID:
+                  type: integer
+                  description: 支援担当者ID
+                executeDateTime:
+                  type: string
+                  description: 実施日時
+                  format: date-time
+                supportContent:
+                  type: string
+                  description: 支援内容
+                outcome:
+                  type: string
+                  description: 成果
+                memo:
+                  type: string
+                  description: メモ
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      security:
+      - BearerAuth: []
+  /api/projects/{id}/members:
+    post:
+      summary: ProjectにPersonをアサインする
+      description: 担当者アサインを記録します。
+      operationId: assignPersonToProject
+      tags:
+      - assignPersonToProject
+      - projects
+      responses:
+        '201':
+          description: 作成成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  eventID:
+                    type: integer
+                    description: イベントID
+                  projectID:
+                    type: integer
+                    description: プロジェクトID
+                  personID:
+                    type: integer
+                    description: 人ID
+                  roleID:
+                    type: integer
+                    description: 役割ID
+                  assignDateTime:
+                    type: string
+                    description: アサイン日時
+                    format: date-time
+                  registeredBy:
+                    type: integer
+                    description: 登録者ID
+                  createdAt:
+                    type: string
+                    format: date-time
+                    description: イベント記録日時
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - personID
+              - roleID
+              - assignDateTime
+              - registeredBy
+              properties:
+                personID:
+                  type: integer
+                  description: 人ID
+                roleID:
+                  type: integer
+                  description: 役割ID
+                assignDateTime:
+                  type: string
+                  description: アサイン日時
+                  format: date-time
+                registeredBy:
+                  type: integer
+                  description: 登録者ID
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      security:
+      - BearerAuth: []
+  /api/projects/{id}/members/{memberId}/replace:
+    put:
+      summary: ProjectのPersonを交代させる
+      description: '担当者交代イベントを記録します。
+
+
+        注意: 新しいPersonがnullの場合、離脱として扱います。'
+      operationId: replacePersonInProject
+      tags:
+      - replacePersonInProject
+      - projects
+      responses:
+        '200':
+          description: 更新成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  eventID:
+                    type: integer
+                    description: イベントID
+                  projectID:
+                    type: integer
+                    description: プロジェクトID
+                  oldPersonID:
+                    type: integer
+                    description: 旧担当者ID
+                  newPersonID:
+                    type: integer
+                    description: 新担当者ID
+                  roleID:
+                    type: integer
+                    description: 役割ID
+                  replaceDateTime:
+                    type: string
+                    description: 交代日時
+                    format: date-time
+                  registeredBy:
+                    type: integer
+                    description: 登録者ID
+                  createdAt:
+                    type: string
+                    format: date-time
+                    description: イベント記録日時
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - oldPersonID
+              - newPersonID
+              - roleID
+              - replaceDateTime
+              - registeredBy
+              properties:
+                oldPersonID:
+                  type: integer
+                  description: 旧担当者ID
+                newPersonID:
+                  type: integer
+                  description: 新担当者ID
+                roleID:
+                  type: integer
+                  description: 役割ID
+                replaceDateTime:
+                  type: string
+                  description: 交代日時
+                  format: date-time
+                registeredBy:
+                  type: integer
+                  description: 登録者ID
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      security:
+      - BearerAuth: []
+  /api/projects/{id}/risks:
+    post:
+      summary: ProjectのRiskを評価する
+      description: リスク評価イベントを記録します。
+      operationId: evaluateRiskForProject
+      tags:
+      - evaluateRiskForProject
+      - projects
+      responses:
+        '201':
+          description: 作成成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  eventID:
+                    type: integer
+                    description: イベントID
+                  projectID:
+                    type: integer
+                    description: プロジェクトID
+                  riskRank:
+                    type: string
+                    description: リスクランク
+                  evaluateDateTime:
+                    type: string
+                    description: 評価日時
+                    format: date-time
+                  evaluatedBy:
+                    type: integer
+                    description: 評価者ID
+                  isSystemProposed:
+                    type: boolean
+                    description: システム提案フラグ
+                  isManualAdjusted:
+                    type: boolean
+                    description: 手動調整フラグ
+                  createdAt:
+                    type: string
+                    format: date-time
+                    description: イベント記録日時
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - riskRank
+              - evaluateDateTime
+              - evaluatedBy
+              - isSystemProposed
+              - isManualAdjusted
+              properties:
+                riskRank:
+                  type: string
+                  description: リスクランク
+                evaluateDateTime:
+                  type: string
+                  description: 評価日時
+                  format: date-time
+                evaluatedBy:
+                  type: integer
+                  description: 評価者ID
+                isSystemProposed:
+                  type: boolean
+                  description: システム提案フラグ
+                isManualAdjusted:
+                  type: boolean
+                  description: 手動調整フラグ
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      security:
+      - BearerAuth: []
+  /api/projects/{id}/complete:
+    post:
+      summary: Projectを完了する
+      description: プロジェクト完了イベントを記録します。
+      operationId: completeProject
+      tags:
+      - completeProject
+      - projects
+      responses:
+        '201':
+          description: 作成成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  eventID:
+                    type: integer
+                    description: イベントID
+                  projectID:
+                    type: integer
+                    description: プロジェクトID
+                  completeDateTime:
+                    type: string
+                    description: 完了日時
+                    format: date-time
+                  actualEffort:
+                    type: string
+                    description: 実績工数
+                  registeredBy:
+                    type: integer
+                    description: 登録者ID
+                  createdAt:
+                    type: string
+                    format: date-time
+                    description: イベント記録日時
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/UnprocessableEntity'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - completeDateTime
+              - actualEffort
+              - registeredBy
+              properties:
+                completeDateTime:
+                  type: string
+                  description: 完了日時
+                  format: date-time
+                actualEffort:
+                  type: string
+                  description: 実績工数
+                registeredBy:
+                  type: integer
+                  description: 登録者ID
+      parameters:
+      - $ref: '#/components/parameters/IdempotencyKey'
+      security:
+      - BearerAuth: []
+  /api/projects/{eventID}/start/latest:
+    get:
+      summary: Projectの最新のプロジェクト開始情報を取得
+      description: 'Projectの最新のプロジェクト開始情報を取得します。
+
+
+        SQL例:
+
+        ```sql
+
+        SELECT * FROM PROJECTSTART
+
+        WHERE ProjectID = ?
+
+        ORDER BY StartDateTime DESC
+
+        LIMIT 1;
+
+        ```'
+      operationId: getProjectLatestStart
+      tags:
+      - getProjectLatestStart
+      - projects
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectStart'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - BearerAuth: []
+  /api/projects/{eventID}/start/history:
+    get:
+      summary: Projectのプロジェクト開始履歴を取得
+      description: 'Projectのプロジェクト開始履歴を時系列順で取得します。
+
+
+        SQL例:
+
+        ```sql
+
+        SELECT * FROM PROJECTSTART
+
+        WHERE ProjectID = ?
+
+        ORDER BY StartDateTime ASC
+
+        LIMIT ? OFFSET ?;
+
+        ```'
+      operationId: getProjectStartHistory
+      tags:
+      - getProjectStartHistory
+      - projects
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                    description: 総件数
+                  limit:
+                    type: integer
+                    description: 取得件数
+                  offset:
+                    type: integer
+                    description: スキップ件数
+                  events:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProjectStart'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 500
+          default: 50
+        description: 取得件数
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+        description: スキップ件数
+      security:
+      - BearerAuth: []
+  /api/projects/{eventID}/start/summary:
+    get:
+      summary: Projectのプロジェクト開始サマリーを取得
+      description: "Projectのプロジェクト開始サマリーを取得します。\n\nイベントの統計情報を集約して返します。\n\nSQL例:\n```sql\nSELECT\n  ProjectID,\n  COUNT(*) as eventCount,\n  MAX(StartDateTime) as latestEvent,\n  MIN(StartDateTime) as firstEvent\nFROM PROJECTSTART\nWHERE ProjectID = ?\nGROUP BY ProjectID;\n```"
+      operationId: getProjectStartSummary
+      tags:
+      - getProjectStartSummary
+      - projects
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  projectID:
+                    type: integer
+                    description: ProjectID
+                  eventCount:
+                    type: integer
+                    description: イベント発生回数
+                  latestEvent:
+                    type: string
+                    format: date-time
+                    description: 最新イベント日時
+                  firstEvent:
+                    type: string
+                    format: date-time
+                    description: 初回イベント日時
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - BearerAuth: []
+  /api/organization_joins/{eventID}/event/latest:
+    get:
+      summary: OrganizationJoinの最新の組織参画情報を取得
+      description: 'OrganizationJoinの最新の組織参画情報を取得します。
+
+
+        SQL例:
+
+        ```sql
+
+        SELECT * FROM ORGANIZATIONJOIN
+
+        WHERE OrganizationJoinID = ?
+
+        ORDER BY JoinDateTime DESC
+
+        LIMIT 1;
+
+        ```'
+      operationId: getOrganizationJoinLatestEvent
+      tags:
+      - getOrganizationJoinLatestEvent
+      - organization_joins
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizationJoin'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - BearerAuth: []
+  /api/organization_joins/{eventID}/event/history:
+    get:
+      summary: OrganizationJoinの組織参画履歴を取得
+      description: 'OrganizationJoinの組織参画履歴を時系列順で取得します。
+
+
+        SQL例:
+
+        ```sql
+
+        SELECT * FROM ORGANIZATIONJOIN
+
+        WHERE OrganizationJoinID = ?
+
+        ORDER BY JoinDateTime ASC
+
+        LIMIT ? OFFSET ?;
+
+        ```'
+      operationId: getOrganizationJoinEventHistory
+      tags:
+      - getOrganizationJoinEventHistory
+      - organization_joins
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                    description: 総件数
+                  limit:
+                    type: integer
+                    description: 取得件数
+                  offset:
+                    type: integer
+                    description: スキップ件数
+                  events:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/OrganizationJoin'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 500
+          default: 50
+        description: 取得件数
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+        description: スキップ件数
+      security:
+      - BearerAuth: []
+  /api/organization_joins/{eventID}/event/summary:
+    get:
+      summary: OrganizationJoinの組織参画サマリーを取得
+      description: "OrganizationJoinの組織参画サマリーを取得します。\n\nイベントの統計情報を集約して返します。\n\nSQL例:\n```sql\nSELECT\n  OrganizationJoinID,\n  COUNT(*) as eventCount,\n  MAX(JoinDateTime) as latestEvent,\n  MIN(JoinDateTime) as firstEvent\nFROM ORGANIZATIONJOIN\nWHERE OrganizationJoinID = ?\nGROUP BY OrganizationJoinID;\n```"
+      operationId: getOrganizationJoinEventSummary
+      tags:
+      - getOrganizationJoinEventSummary
+      - organization_joins
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  organizationjoinID:
+                    type: integer
+                    description: OrganizationJoinID
+                  eventCount:
+                    type: integer
+                    description: イベント発生回数
+                  latestEvent:
+                    type: string
+                    format: date-time
+                    description: 最新イベント日時
+                  firstEvent:
+                    type: string
+                    format: date-time
+                    description: 初回イベント日時
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - BearerAuth: []
+  /api/persons/{eventID}/assign/latest:
+    get:
+      summary: Personの最新の担当者アサイン情報を取得
+      description: 'Personの最新の担当者アサイン情報を取得します。
+
+
+        SQL例:
+
+        ```sql
+
+        SELECT * FROM PERSONASSIGN
+
+        WHERE PersonID = ?
+
+        ORDER BY AssignDateTime DESC
+
+        LIMIT 1;
+
+        ```'
+      operationId: getPersonLatestAssign
+      tags:
+      - getPersonLatestAssign
+      - persons
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonAssign'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - BearerAuth: []
+  /api/persons/{eventID}/assign/history:
+    get:
+      summary: Personの担当者アサイン履歴を取得
+      description: 'Personの担当者アサイン履歴を時系列順で取得します。
+
+
+        SQL例:
+
+        ```sql
+
+        SELECT * FROM PERSONASSIGN
+
+        WHERE PersonID = ?
+
+        ORDER BY AssignDateTime ASC
+
+        LIMIT ? OFFSET ?;
+
+        ```'
+      operationId: getPersonAssignHistory
+      tags:
+      - getPersonAssignHistory
+      - persons
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                    description: 総件数
+                  limit:
+                    type: integer
+                    description: 取得件数
+                  offset:
+                    type: integer
+                    description: スキップ件数
+                  events:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PersonAssign'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 500
+          default: 50
+        description: 取得件数
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+        description: スキップ件数
+      security:
+      - BearerAuth: []
+  /api/projects/{eventID}/members/current:
+    get:
+      summary: Projectの現在の担当者アサイン状況を取得
+      description: "Projectの現在のPersonアサイン状況を取得します。\n\n置換済みのアサインを除外した現在のメンバー一覧を返します。\n\nSQL例:\n```sql\nSELECT pa.*, p.*\nFROM PERSONASSIGN pa\nJOIN PERSON p ON pa.PersonID = p.PersonID\nWHERE pa.ProjectID = ?\n  AND NOT EXISTS (\n    SELECT 1 FROM PERSONREPLACE pr\n    WHERE pr.ProjectID = pa.ProjectID\n      AND pr.OldPersonID = pa.PersonID\n  );\n```"
+      operationId: getProjectCurrentPersons
+      tags:
+      - getProjectCurrentPersons
+      - projects
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  projectID:
+                    type: integer
+                  currentPersons:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PersonAssign'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - BearerAuth: []
+  /api/persons/{eventID}/assign/summary:
+    get:
+      summary: Personの担当者アサインサマリーを取得
+      description: "Personの担当者アサインサマリーを取得します。\n\nイベントの統計情報を集約して返します。\n\nSQL例:\n```sql\nSELECT\n  PersonID,\n  COUNT(*) as eventCount,\n  MAX(AssignDateTime) as latestEvent,\n  MIN(AssignDateTime) as firstEvent\nFROM PERSONASSIGN\nWHERE PersonID = ?\nGROUP BY PersonID;\n```"
+      operationId: getPersonAssignSummary
+      tags:
+      - getPersonAssignSummary
+      - persons
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  personID:
+                    type: integer
+                    description: PersonID
+                  eventCount:
+                    type: integer
+                    description: イベント発生回数
+                  latestEvent:
+                    type: string
+                    format: date-time
+                    description: 最新イベント日時
+                  firstEvent:
+                    type: string
+                    format: date-time
+                    description: 初回イベント日時
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - BearerAuth: []
+  /api/persons/{eventID}/replace/latest:
+    get:
+      summary: Personの最新の担当者交代情報を取得
+      description: 'Personの最新の担当者交代情報を取得します。
+
+
+        SQL例:
+
+        ```sql
+
+        SELECT * FROM PERSONREPLACE
+
+        WHERE PersonID = ?
+
+        ORDER BY ReplaceDateTime DESC
+
+        LIMIT 1;
+
+        ```'
+      operationId: getPersonLatestReplace
+      tags:
+      - getPersonLatestReplace
+      - persons
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PersonReplace'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - BearerAuth: []
+  /api/persons/{eventID}/replace/history:
+    get:
+      summary: Personの担当者交代履歴を取得
+      description: 'Personの担当者交代履歴を時系列順で取得します。
+
+
+        SQL例:
+
+        ```sql
+
+        SELECT * FROM PERSONREPLACE
+
+        WHERE PersonID = ?
+
+        ORDER BY ReplaceDateTime ASC
+
+        LIMIT ? OFFSET ?;
+
+        ```'
+      operationId: getPersonReplaceHistory
+      tags:
+      - getPersonReplaceHistory
+      - persons
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                    description: 総件数
+                  limit:
+                    type: integer
+                    description: 取得件数
+                  offset:
+                    type: integer
+                    description: スキップ件数
+                  events:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/PersonReplace'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 500
+          default: 50
+        description: 取得件数
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+        description: スキップ件数
+      security:
+      - BearerAuth: []
+  /api/persons/{eventID}/replace/summary:
+    get:
+      summary: Personの担当者交代サマリーを取得
+      description: "Personの担当者交代サマリーを取得します。\n\nイベントの統計情報を集約して返します。\n\nSQL例:\n```sql\nSELECT\n  PersonID,\n  COUNT(*) as eventCount,\n  MAX(ReplaceDateTime) as latestEvent,\n  MIN(ReplaceDateTime) as firstEvent\nFROM PERSONREPLACE\nWHERE PersonID = ?\nGROUP BY PersonID;\n```"
+      operationId: getPersonReplaceSummary
+      tags:
+      - getPersonReplaceSummary
+      - persons
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  personID:
+                    type: integer
+                    description: PersonID
+                  eventCount:
+                    type: integer
+                    description: イベント発生回数
+                  latestEvent:
+                    type: string
+                    format: date-time
+                    description: 最新イベント日時
+                  firstEvent:
+                    type: string
+                    format: date-time
+                    description: 初回イベント日時
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - BearerAuth: []
+  /api/risks/{eventID}/evaluate/latest:
+    get:
+      summary: Riskの最新のリスク評価情報を取得
+      description: 'Riskの最新のリスク評価情報を取得します。
+
+
+        SQL例:
+
+        ```sql
+
+        SELECT * FROM RISKEVALUATE
+
+        WHERE RiskID = ?
+
+        ORDER BY EvaluateDateTime DESC
+
+        LIMIT 1;
+
+        ```'
+      operationId: getRiskLatestEvaluate
+      tags:
+      - getRiskLatestEvaluate
+      - risks
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RiskEvaluate'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - BearerAuth: []
+  /api/risks/{eventID}/evaluate/history:
+    get:
+      summary: Riskのリスク評価履歴を取得
+      description: 'Riskのリスク評価履歴を時系列順で取得します。
+
+
+        SQL例:
+
+        ```sql
+
+        SELECT * FROM RISKEVALUATE
+
+        WHERE RiskID = ?
+
+        ORDER BY EvaluateDateTime ASC
+
+        LIMIT ? OFFSET ?;
+
+        ```'
+      operationId: getRiskEvaluateHistory
+      tags:
+      - getRiskEvaluateHistory
+      - risks
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                    description: 総件数
+                  limit:
+                    type: integer
+                    description: 取得件数
+                  offset:
+                    type: integer
+                    description: スキップ件数
+                  events:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/RiskEvaluate'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 500
+          default: 50
+        description: 取得件数
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+        description: スキップ件数
+      security:
+      - BearerAuth: []
+  /api/risks/{eventID}/evaluate/summary:
+    get:
+      summary: Riskのリスク評価サマリーを取得
+      description: "Riskのリスク評価サマリーを取得します。\n\nイベントの統計情報を集約して返します。\n\nSQL例:\n```sql\nSELECT\n  RiskID,\n  COUNT(*) as eventCount,\n  MAX(EvaluateDateTime) as latestEvent,\n  MIN(EvaluateDateTime) as firstEvent\nFROM RISKEVALUATE\nWHERE RiskID = ?\nGROUP BY RiskID;\n```"
+      operationId: getRiskEvaluateSummary
+      tags:
+      - getRiskEvaluateSummary
+      - risks
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  riskID:
+                    type: integer
+                    description: RiskID
+                  eventCount:
+                    type: integer
+                    description: イベント発生回数
+                  latestEvent:
+                    type: string
+                    format: date-time
+                    description: 最新イベント日時
+                  firstEvent:
+                    type: string
+                    format: date-time
+                    description: 初回イベント日時
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - BearerAuth: []
+  /api/support_executes/{eventID}/event/latest:
+    get:
+      summary: SupportExecuteの最新の支援実施情報を取得
+      description: 'SupportExecuteの最新の支援実施情報を取得します。
+
+
+        SQL例:
+
+        ```sql
+
+        SELECT * FROM SUPPORTEXECUTE
+
+        WHERE SupportExecuteID = ?
+
+        ORDER BY ExecuteDateTime DESC
+
+        LIMIT 1;
+
+        ```'
+      operationId: getSupportExecuteLatestEvent
+      tags:
+      - getSupportExecuteLatestEvent
+      - support_executes
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupportExecute'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - BearerAuth: []
+  /api/support_executes/{eventID}/event/history:
+    get:
+      summary: SupportExecuteの支援実施履歴を取得
+      description: 'SupportExecuteの支援実施履歴を時系列順で取得します。
+
+
+        SQL例:
+
+        ```sql
+
+        SELECT * FROM SUPPORTEXECUTE
+
+        WHERE SupportExecuteID = ?
+
+        ORDER BY ExecuteDateTime ASC
+
+        LIMIT ? OFFSET ?;
+
+        ```'
+      operationId: getSupportExecuteEventHistory
+      tags:
+      - getSupportExecuteEventHistory
+      - support_executes
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                    description: 総件数
+                  limit:
+                    type: integer
+                    description: 取得件数
+                  offset:
+                    type: integer
+                    description: スキップ件数
+                  events:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/SupportExecute'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 500
+          default: 50
+        description: 取得件数
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+        description: スキップ件数
+      security:
+      - BearerAuth: []
+  /api/support_executes/{eventID}/event/summary:
+    get:
+      summary: SupportExecuteの支援実施サマリーを取得
+      description: "SupportExecuteの支援実施サマリーを取得します。\n\nイベントの統計情報を集約して返します。\n\nSQL例:\n```sql\nSELECT\n  SupportExecuteID,\n  COUNT(*) as eventCount,\n  MAX(ExecuteDateTime) as latestEvent,\n  MIN(ExecuteDateTime) as firstEvent\nFROM SUPPORTEXECUTE\nWHERE SupportExecuteID = ?\nGROUP BY SupportExecuteID;\n```"
+      operationId: getSupportExecuteEventSummary
+      tags:
+      - getSupportExecuteEventSummary
+      - support_executes
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  supportexecuteID:
+                    type: integer
+                    description: SupportExecuteID
+                  eventCount:
+                    type: integer
+                    description: イベント発生回数
+                  latestEvent:
+                    type: string
+                    format: date-time
+                    description: 最新イベント日時
+                  firstEvent:
+                    type: string
+                    format: date-time
+                    description: 初回イベント日時
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - BearerAuth: []
+  /api/projects/{eventID}/complete/latest:
+    get:
+      summary: Projectの最新のプロジェクト完了情報を取得
+      description: 'Projectの最新のプロジェクト完了情報を取得します。
+
+
+        SQL例:
+
+        ```sql
+
+        SELECT * FROM PROJECTCOMPLETE
+
+        WHERE ProjectID = ?
+
+        ORDER BY CompleteDateTime DESC
+
+        LIMIT 1;
+
+        ```'
+      operationId: getProjectLatestComplete
+      tags:
+      - getProjectLatestComplete
+      - projects
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProjectComplete'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - BearerAuth: []
+  /api/projects/{eventID}/complete/history:
+    get:
+      summary: Projectのプロジェクト完了履歴を取得
+      description: 'Projectのプロジェクト完了履歴を時系列順で取得します。
+
+
+        SQL例:
+
+        ```sql
+
+        SELECT * FROM PROJECTCOMPLETE
+
+        WHERE ProjectID = ?
+
+        ORDER BY CompleteDateTime ASC
+
+        LIMIT ? OFFSET ?;
+
+        ```'
+      operationId: getProjectCompleteHistory
+      tags:
+      - getProjectCompleteHistory
+      - projects
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                    description: 総件数
+                  limit:
+                    type: integer
+                    description: 取得件数
+                  offset:
+                    type: integer
+                    description: スキップ件数
+                  events:
+                    type: array
+                    items:
+                      $ref: '#/components/schemas/ProjectComplete'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      parameters:
+      - name: limit
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 1
+          maximum: 500
+          default: 50
+        description: 取得件数
+      - name: offset
+        in: query
+        required: false
+        schema:
+          type: integer
+          minimum: 0
+          default: 0
+        description: スキップ件数
+      security:
+      - BearerAuth: []
+  /api/projects/{eventID}/complete/summary:
+    get:
+      summary: Projectのプロジェクト完了サマリーを取得
+      description: "Projectのプロジェクト完了サマリーを取得します。\n\nイベントの統計情報を集約して返します。\n\nSQL例:\n```sql\nSELECT\n  ProjectID,\n  COUNT(*) as eventCount,\n  MAX(CompleteDateTime) as latestEvent,\n  MIN(CompleteDateTime) as firstEvent\nFROM PROJECTCOMPLETE\nWHERE ProjectID = ?\nGROUP BY ProjectID;\n```"
+      operationId: getProjectCompleteSummary
+      tags:
+      - getProjectCompleteSummary
+      - projects
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  projectID:
+                    type: integer
+                    description: ProjectID
+                  eventCount:
+                    type: integer
+                    description: イベント発生回数
+                  latestEvent:
+                    type: string
+                    format: date-time
+                    description: 最新イベント日時
+                  firstEvent:
+                    type: string
+                    format: date-time
+                    description: 初回イベント日時
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+      security:
+      - BearerAuth: []
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: 'JWT Bearer Token 認証
+
+
+        トークンの取得方法:
+
+        1. `/api/auth/login` にクレデンシャルをPOST
+
+        2. レスポンスから `access_token` を取得
+
+        3. 全リクエストに `Authorization: Bearer <access_token>` ヘッダーを追加
+
+
+        トークンの有効期限:
+
+        - Access Token: 1時間
+
+        - Refresh Token: 30日
+
+        '
+  schemas:
+    Project:
+      type: object
+      required:
+      - projectID
+      - customerID
+      properties:
+        projectID:
+          type: integer
+          description: "項目名: プロジェクトID\nドメイン: projectID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("projectID")'
+        projectName:
+          type: string
+          description: "項目名: プロジェクト名\nドメイン: projectName\n制約:\n  - 型: 文字列\n  - 最大長: 200文字\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("projectName")'
+        customerID:
+          type: integer
+          description: "項目名: 顧客ID\nドメイン: customerID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: いいえ"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("customerID")'
+        estimatedEffort:
+          type: string
+          description: "項目名: 受注規模\nドメイン: estimatedEffort\n制約:\n  - 型: 数値（DECIMAL）\n  - 整数部: 最大8桁\n  - 小数部: 2桁\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("estimatedEffort")'
+        plannedStartDate:
+          type: string
+          description: "項目名: 計画開始日\nドメイン: plannedStartDate\n制約:\n  - 型: 日付\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          format: date
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("plannedStartDate")'
+        plannedEndDate:
+          type: string
+          description: "項目名: 計画終了日\nドメイン: plannedEndDate\n制約:\n  - 型: 日付\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          format: date
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("plannedEndDate")'
+        createdAt:
+          type: string
+          description: "項目名: 作成日時\nドメイン: createdAt\n制約:\n  - 型: 日時\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          format: date-time
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("createdAt")'
+      description: プロジェクト
+    Person:
+      type: object
+      required:
+      - personID
+      properties:
+        personID:
+          type: integer
+          description: "項目名: 人ID\nドメイン: personID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("personID")'
+        name:
+          type: string
+          description: "項目名: 氏名\nドメイン: name\n制約:\n  - 型: 文字列\n  - 最大長: 100文字\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("name")'
+        email:
+          type: string
+          description: "項目名: メールアドレス\nドメイン: email\n制約:\n  - 型: 文字列\n  - 最大長: 100文字\n  - 文字種: ASCII文字\n  - フォーマット: メールアドレス形式（RFC 5322準拠）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("email")'
+        createdAt:
+          type: string
+          description: "項目名: 作成日時\nドメイン: createdAt\n制約:\n  - 型: 日時\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          format: date-time
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("createdAt")'
+      description: 人
+    Organization:
+      type: object
+      required:
+      - organizationID
+      - parentOrganizationID
+      properties:
+        organizationID:
+          type: integer
+          description: "項目名: 組織ID\nドメイン: organizationID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("organizationID")'
+        organizationName:
+          type: string
+          description: "項目名: 組織名\nドメイン: organizationName\n制約:\n  - 型: 文字列\n  - 最大長: 100文字\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("organizationName")'
+        organizationType:
+          type: string
+          description: "項目名: 組織種別\nドメイン: organizationType\n制約:\n  - 型: 文字列\n  - 最大長: 50文字\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("organizationType")'
+        parentOrganizationID:
+          type: integer
+          description: "項目名: 親組織ID\nドメイン: parentOrganizationID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("parentOrganizationID")'
+        createdAt:
+          type: string
+          description: "項目名: 作成日時\nドメイン: createdAt\n制約:\n  - 型: 日時\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          format: date-time
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("createdAt")'
+      description: 組織
+    Customer:
+      type: object
+      required:
+      - customerID
+      - industryID
+      properties:
+        customerID:
+          type: integer
+          description: "項目名: 顧客ID\nドメイン: customerID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: いいえ"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("customerID")'
+        customerName:
+          type: string
+          description: "項目名: 顧客名\nドメイン: customerName\n制約:\n  - 型: 文字列\n  - 最大長: 200文字\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("customerName")'
+        industryID:
+          type: integer
+          description: "項目名: 業界ID\nドメイン: industryID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: いいえ"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("industryID")'
+        createdAt:
+          type: string
+          description: "項目名: 作成日時\nドメイン: createdAt\n制約:\n  - 型: 日時\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          format: date-time
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("createdAt")'
+      description: 顧客
+    Industry:
+      type: object
+      required:
+      - industryID
+      properties:
+        industryID:
+          type: integer
+          description: "項目名: 業界ID\nドメイン: industryID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: いいえ"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("industryID")'
+        industryName:
+          type: string
+          description: "項目名: 業界名\nドメイン: industryName\n制約:\n  - 型: 文字列\n  - 最大長: 100文字\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("industryName")'
+        createdAt:
+          type: string
+          description: "項目名: 作成日時\nドメイン: createdAt\n制約:\n  - 型: 日時\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          format: date-time
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("createdAt")'
+      description: 業界
+    Role:
+      type: object
+      required:
+      - roleID
+      properties:
+        roleID:
+          type: integer
+          description: "項目名: 役割ID\nドメイン: roleID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("roleID")'
+        roleName:
+          type: string
+          description: "項目名: 役割名\nドメイン: roleName\n制約:\n  - 型: 文字列\n  - 最大長: 50文字\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("roleName")'
+        createdAt:
+          type: string
+          description: "項目名: 作成日時\nドメイン: createdAt\n制約:\n  - 型: 日時\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          format: date-time
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("createdAt")'
+      description: 役割
+    SupportType:
+      type: object
+      required:
+      - supportTypeID
+      properties:
+        supportTypeID:
+          type: integer
+          description: "項目名: 支援タイプID\nドメイン: supportTypeID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("supportTypeID")'
+        supportTypeName:
+          type: string
+          description: "項目名: 支援タイプ名\nドメイン: supportTypeName\n制約:\n  - 型: 文字列\n  - 最大長: 100文字\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("supportTypeName")'
+        description:
+          type: string
+          description: "項目名: 説明\nドメイン: description\n制約:\n  - 型: 文字列\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("description")'
+        createdAt:
+          type: string
+          description: "項目名: 作成日時\nドメイン: createdAt\n制約:\n  - 型: 日時\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          format: date-time
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("createdAt")'
+      description: 支援タイプ
+    User:
+      type: object
+      required:
+      - userID
+      - personID
+      properties:
+        userID:
+          type: integer
+          description: "項目名: ユーザーID\nドメイン: userID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: いいえ"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("userID")'
+        personID:
+          type: integer
+          description: "項目名: 人ID\nドメイン: personID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("personID")'
+        username:
+          type: string
+          description: "項目名: ユーザー名\nドメイン: username\n制約:\n  - 型: 文字列\n  - 最大長: 50文字\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("username")'
+        createdAt:
+          type: string
+          description: "項目名: 作成日時\nドメイン: createdAt\n制約:\n  - 型: 日時\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          format: date-time
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("createdAt")'
+      description: ユーザー
+    DevelopmentType:
+      type: object
+      required:
+      - developmentTypeID
+      properties:
+        developmentTypeID:
+          type: integer
+          description: "項目名: 開発種別ID\nドメイン: developmentTypeID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: いいえ"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("developmentTypeID")'
+        developmentTypeName:
+          type: string
+          description: "項目名: 開発種別名\nドメイン: developmentTypeName\n制約:\n  - 型: 文字列\n  - 最大長: 100文字\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("developmentTypeName")'
+        description:
+          type: string
+          description: "項目名: 説明\nドメイン: description\n制約:\n  - 型: 文字列\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("description")'
+        createdAt:
+          type: string
+          description: "項目名: 作成日時\nドメイン: createdAt\n制約:\n  - 型: 日時\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          format: date-time
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("createdAt")'
+      description: 開発種別
+    DevelopmentMethod:
+      type: object
+      required:
+      - developmentMethodID
+      properties:
+        developmentMethodID:
+          type: integer
+          description: "項目名: 開発方式ID\nドメイン: developmentMethodID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: いいえ"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("developmentMethodID")'
+        developmentMethodName:
+          type: string
+          description: "項目名: 開発方式名\nドメイン: developmentMethodName\n制約:\n  - 型: 文字列\n  - 最大長: 100文字\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("developmentMethodName")'
+        description:
+          type: string
+          description: "項目名: 説明\nドメイン: description\n制約:\n  - 型: 文字列\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("description")'
+        createdAt:
+          type: string
+          description: "項目名: 作成日時\nドメイン: createdAt\n制約:\n  - 型: 日時\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          format: date-time
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("createdAt")'
+      description: 開発方式
+    TargetPhase:
+      type: object
+      required:
+      - targetPhaseID
+      properties:
+        targetPhaseID:
+          type: integer
+          description: "項目名: 対象工程ID\nドメイン: targetPhaseID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: いいえ"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("targetPhaseID")'
+        targetPhaseName:
+          type: string
+          description: "項目名: 対象工程名\nドメイン: targetPhaseName\n制約:\n  - 型: 文字列\n  - 最大長: 100文字\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("targetPhaseName")'
+        description:
+          type: string
+          description: "項目名: 説明\nドメイン: description\n制約:\n  - 型: 文字列\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("description")'
+        createdAt:
+          type: string
+          description: "項目名: 作成日時\nドメイン: createdAt\n制約:\n  - 型: 日時\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          format: date-time
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("createdAt")'
+      description: 対象工程
+    ProjectStart:
+      type: object
+      required:
+      - eventID
+      - projectID
+      properties:
+        eventID:
+          type: integer
+          description: "項目名: イベントID\nドメイン: eventID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: いいえ"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("eventID")'
+        projectID:
+          type: integer
+          description: "項目名: プロジェクトID\nドメイン: projectID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("projectID")'
+        startDateTime:
+          type: string
+          description: "項目名: 開始日時\nドメイン: startDateTime\n制約:\n  - 型: 日時\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          format: date-time
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("startDateTime")'
+        registeredBy:
+          type: integer
+          description: "項目名: 登録者ID\nドメイン: registeredBy\n制約:\n  - 型: 整数\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("registeredBy")'
+      description: プロジェクト開始
+    OrganizationJoin:
+      type: object
+      required:
+      - eventID
+      - projectID
+      - organizationID
+      properties:
+        eventID:
+          type: integer
+          description: "項目名: イベントID\nドメイン: eventID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: いいえ"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("eventID")'
+        projectID:
+          type: integer
+          description: "項目名: プロジェクトID\nドメイン: projectID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("projectID")'
+        organizationID:
+          type: integer
+          description: "項目名: 組織ID\nドメイン: organizationID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("organizationID")'
+        joinDateTime:
+          type: string
+          description: "項目名: 参画日時\nドメイン: joinDateTime\n制約:\n  - 型: 日時\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          format: date-time
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("joinDateTime")'
+        registeredBy:
+          type: integer
+          description: "項目名: 登録者ID\nドメイン: registeredBy\n制約:\n  - 型: 整数\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("registeredBy")'
+      description: 組織参画
+    PersonAssign:
+      type: object
+      required:
+      - eventID
+      - projectID
+      - personID
+      - roleID
+      properties:
+        eventID:
+          type: integer
+          description: "項目名: イベントID\nドメイン: eventID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: いいえ"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("eventID")'
+        projectID:
+          type: integer
+          description: "項目名: プロジェクトID\nドメイン: projectID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("projectID")'
+        personID:
+          type: integer
+          description: "項目名: 人ID\nドメイン: personID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("personID")'
+        roleID:
+          type: integer
+          description: "項目名: 役割ID\nドメイン: roleID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("roleID")'
+        assignDateTime:
+          type: string
+          description: "項目名: アサイン日時\nドメイン: assignDateTime\n制約:\n  - 型: 日時\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          format: date-time
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("assignDateTime")'
+        registeredBy:
+          type: integer
+          description: "項目名: 登録者ID\nドメイン: registeredBy\n制約:\n  - 型: 整数\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("registeredBy")'
+      description: 担当者アサイン
+    PersonReplace:
+      type: object
+      required:
+      - eventID
+      - projectID
+      - oldPersonID
+      - newPersonID
+      - roleID
+      properties:
+        eventID:
+          type: integer
+          description: "項目名: イベントID\nドメイン: eventID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: いいえ"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("eventID")'
+        projectID:
+          type: integer
+          description: "項目名: プロジェクトID\nドメイン: projectID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("projectID")'
+        oldPersonID:
+          type: integer
+          description: "項目名: 旧担当者ID\nドメイン: oldPersonID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("oldPersonID")'
+        newPersonID:
+          type: integer
+          description: "項目名: 新担当者ID\nドメイン: newPersonID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("newPersonID")'
+        roleID:
+          type: integer
+          description: "項目名: 役割ID\nドメイン: roleID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("roleID")'
+        replaceDateTime:
+          type: string
+          description: "項目名: 交代日時\nドメイン: replaceDateTime\n制約:\n  - 型: 日時\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          format: date-time
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("replaceDateTime")'
+        registeredBy:
+          type: integer
+          description: "項目名: 登録者ID\nドメイン: registeredBy\n制約:\n  - 型: 整数\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("registeredBy")'
+      description: 担当者交代
+    RiskEvaluate:
+      type: object
+      required:
+      - eventID
+      - projectID
+      properties:
+        eventID:
+          type: integer
+          description: "項目名: イベントID\nドメイン: eventID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: いいえ"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("eventID")'
+        projectID:
+          type: integer
+          description: "項目名: プロジェクトID\nドメイン: projectID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("projectID")'
+        riskRank:
+          type: string
+          description: "項目名: リスクランク\nドメイン: riskRank\n制約:\n  - 型: 文字列\n  - 最大長: 20文字\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("riskRank")'
+        evaluateDateTime:
+          type: string
+          description: "項目名: 評価日時\nドメイン: evaluateDateTime\n制約:\n  - 型: 日時\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          format: date-time
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("evaluateDateTime")'
+        evaluatedBy:
+          type: integer
+          description: "項目名: 評価者ID\nドメイン: evaluatedBy\n制約:\n  - 型: 整数\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("evaluatedBy")'
+        isSystemProposed:
+          type: boolean
+          description: "項目名: システム提案フラグ\nドメイン: isSystemProposed\n制約:\n  - 型: ブール値\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("isSystemProposed")'
+        isManualAdjusted:
+          type: boolean
+          description: "項目名: 手動調整フラグ\nドメイン: isManualAdjusted\n制約:\n  - 型: ブール値\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("isManualAdjusted")'
+      description: リスク評価
+    SupportExecute:
+      type: object
+      required:
+      - eventID
+      - projectID
+      - supportTypeID
+      - supportPersonID
+      properties:
+        eventID:
+          type: integer
+          description: "項目名: イベントID\nドメイン: eventID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: いいえ"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("eventID")'
+        projectID:
+          type: integer
+          description: "項目名: プロジェクトID\nドメイン: projectID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("projectID")'
+        supportTypeID:
+          type: integer
+          description: "項目名: 支援タイプID\nドメイン: supportTypeID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("supportTypeID")'
+        supportPersonID:
+          type: integer
+          description: "項目名: 支援担当者ID\nドメイン: supportPersonID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("supportPersonID")'
+        executeDateTime:
+          type: string
+          description: "項目名: 実施日時\nドメイン: executeDateTime\n制約:\n  - 型: 日時\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          format: date-time
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("executeDateTime")'
+        supportContent:
+          type: string
+          description: "項目名: 支援内容\nドメイン: supportContent\n制約:\n  - 型: 文字列\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("supportContent")'
+        outcome:
+          type: string
+          description: "項目名: 成果\nドメイン: outcome\n制約:\n  - 型: 文字列\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("outcome")'
+        memo:
+          type: string
+          description: "項目名: メモ\nドメイン: memo\n制約:\n  - 型: 文字列\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("memo")'
+      description: 支援実施
+    ProjectComplete:
+      type: object
+      required:
+      - eventID
+      - projectID
+      properties:
+        eventID:
+          type: integer
+          description: "項目名: イベントID\nドメイン: eventID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: いいえ"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("eventID")'
+        projectID:
+          type: integer
+          description: "項目名: プロジェクトID\nドメイン: projectID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("projectID")'
+        completeDateTime:
+          type: string
+          description: "項目名: 完了日時\nドメイン: completeDateTime\n制約:\n  - 型: 日時\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          format: date-time
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("completeDateTime")'
+        actualEffort:
+          type: string
+          description: "項目名: 実績工数\nドメイン: actualEffort\n制約:\n  - 型: 数値（DECIMAL）\n  - 整数部: 最大8桁\n  - 小数部: 2桁\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("actualEffort")'
+        registeredBy:
+          type: integer
+          description: "項目名: 登録者ID\nドメイン: registeredBy\n制約:\n  - 型: 整数\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("registeredBy")'
+      description: プロジェクト完了
+    ProblemDetails:
+      type: object
+      required:
+      - type
+      - title
+      - status
+      properties:
+        type:
+          type: string
+          format: uri
+          description: "項目名: type\nドメイン: type\n制約:\n  - 型: 文字列\n  - 最大長: 255文字\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          example: https://api.example.com/errors/validation-error
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("type")'
+        title:
+          type: string
+          description: "項目名: title\nドメイン: title\n制約:\n  - 型: 文字列\n  - 最大長: 255文字\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          example: Validation Error
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("title")'
+        status:
+          type: integer
+          description: "項目名: status\nドメイン: status\n制約:\n  - 型: 文字列\n  - 最大長: 255文字\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          example: 400
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("status")'
+        detail:
+          type: string
+          description: "項目名: detail\nドメイン: detail\n制約:\n  - 型: 文字列\n  - 最大長: 255文字\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          example: 必須項目が不足しています
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("detail")'
+        instance:
+          type: string
+          format: uri
+          description: "項目名: instance\nドメイン: instance\n制約:\n  - 型: 文字列\n  - 最大長: 255文字\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          example: /api/projects
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("instance")'
+      additionalProperties: true
+      description: RFC 7807 準拠のエラーレスポンス
+    ValidationError:
+      allOf:
+      - $ref: '#/components/schemas/ProblemDetails'
+      - type: object
+        properties:
+          errors:
+            type: array
+            description: 詳細なバリデーションエラー
+            items:
+              $ref: '#/components/schemas/ValidationErrorDetail'
+    ValidationErrorDetail:
+      type: object
+      required:
+      - field
+      - message
+      properties:
+        field:
+          type: string
+          description: "項目名: field\nドメイン: field\n制約:\n  - 型: 文字列\n  - 最大長: 255文字\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          example: projectName
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("field")'
+        message:
+          type: string
+          description: "項目名: message\nドメイン: message\n制約:\n  - 型: 文字列\n  - 最大長: 255文字\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          example: プロジェクト名は必須です
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("message")'
+        value:
+          description: "項目名: value\nドメイン: value\n制約:\n  - 型: 文字列\n  - 最大長: 255文字\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          nullable: true
+          example: null
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("value")'
+        constraint:
+          type: object
+          description: "項目名: constraint\nドメイン: constraint\n制約:\n  - 型: 文字列\n  - 最大長: 255文字\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          additionalProperties: true
+          example:
+            minLength: 1
+            maxLength: 200
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("constraint")'
+    PaginatedResponse:
+      type: object
+      required:
+      - total
+      - limit
+      - offset
+      properties:
+        total:
+          type: integer
+          description: "項目名: total\nドメイン: total\n制約:\n  - 型: 文字列\n  - 最大長: 255文字\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          example: 150
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("total")'
+        limit:
+          type: integer
+          description: "項目名: limit\nドメイン: limit\n制約:\n  - 型: 文字列\n  - 最大長: 255文字\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          example: 50
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("limit")'
+        offset:
+          type: integer
+          description: "項目名: offset\nドメイン: offset\n制約:\n  - 型: 文字列\n  - 最大長: 255文字\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          example: 0
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("offset")'
+      additionalProperties: true
+    ID:
+      type: integer
+      format: int64
+      minimum: 1
+      description: リソースID
+    Timestamp:
+      type: string
+      format: date-time
+      description: ISO 8601形式の日時
+      example: '2026-01-11T10:00:00Z'
+    Date:
+      type: string
+      format: date
+      description: ISO 8601形式の日付
+      example: '2026-01-11'
+    IdempotencyKey:
+      type: string
+      format: uuid
+      description: 冪等性キー（UUID v4）
+      example: 550e8400-e29b-41d4-a716-446655440000
+  responses:
+    BadRequest:
+      description: バリデーションエラー
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ValidationError'
+          examples:
+            missingFields:
+              summary: 必須項目欠損
+              value:
+                type: https://api.example.com/errors/validation-error
+                title: Validation Error
+                status: 400
+                detail: 必須項目が不足しています
+                instance: /api/projects
+                errors:
+                - field: projectName
+                  message: プロジェクト名は必須です
+                  value: null
+                - field: customerID
+                  message: 顧客IDは必須です
+                  value: null
+            invalidFormat:
+              summary: 不正なフォーマット
+              value:
+                type: https://api.example.com/errors/validation-error
+                title: Validation Error
+                status: 400
+                detail: 日付フォーマットが不正です
+                instance: /api/projects
+                errors:
+                - field: plannedStartDate
+                  message: YYYY-MM-DD 形式で入力してください
+                  value: 2026/01/01
+            lengthConstraint:
+              summary: 文字数制限違反
+              value:
+                type: https://api.example.com/errors/validation-error
+                title: Validation Error
+                status: 400
+                detail: 文字数制限を超えています
+                instance: /api/projects
+                errors:
+                - field: projectName
+                  message: プロジェクト名は1-200文字で入力してください
+                  value: 非常に長いプロジェクト名...
+                  constraint:
+                    minLength: 1
+                    maxLength: 200
+                    actualLength: 250
+            rangeConstraint:
+              summary: 値の範囲外
+              value:
+                type: https://api.example.com/errors/validation-error
+                title: Validation Error
+                status: 400
+                detail: 値が許容範囲外です
+                instance: /api/projects
+                errors:
+                - field: contractAmount
+                  message: 契約金額は0以上である必要があります
+                  value: -1000000
+                  constraint:
+                    minimum: 0
+    Unauthorized:
+      description: 認証エラー
+      headers:
+        WWW-Authenticate:
+          schema:
+            type: string
+          description: 認証方式（Bearer）
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+          examples:
+            missingToken:
+              summary: トークン未提供
+              value:
+                type: https://api.example.com/errors/unauthorized
+                title: Unauthorized
+                status: 401
+                detail: 認証トークンが提供されていません。Authorization ヘッダーを追加してください。
+                instance: /api/projects/456
+            invalidToken:
+              summary: 無効なトークン
+              value:
+                type: https://api.example.com/errors/unauthorized
+                title: Unauthorized
+                status: 401
+                detail: 認証トークンが無効です。
+                instance: /api/projects/456
+            expiredToken:
+              summary: トークン期限切れ
+              value:
+                type: https://api.example.com/errors/token-expired
+                title: Token Expired
+                status: 401
+                detail: 認証トークンの有効期限が切れています。再ログインしてください。
+                instance: /api/projects/456
+                expiredAt: '2026-01-10T23:59:59Z'
+    Forbidden:
+      description: 権限エラー
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+          examples:
+            insufficientPermissions:
+              summary: 権限不足
+              value:
+                type: https://api.example.com/errors/forbidden
+                title: Forbidden
+                status: 403
+                detail: このリソースへのアクセス権限がありません
+                instance: /api/projects/456
+            roleRequired:
+              summary: ロール要件
+              value:
+                type: https://api.example.com/errors/forbidden
+                title: Forbidden
+                status: 403
+                detail: このプロジェクトを開始する権限がありません。プロジェクトマネージャーロールが必要です。
+                instance: /api/projects/456/start
+                requiredRole: PROJECT_MANAGER
+                userRole: ENGINEER
+            ownerOnly:
+              summary: オーナーのみ許可
+              value:
+                type: https://api.example.com/errors/forbidden
+                title: Forbidden
+                status: 403
+                detail: このプロジェクトを削除できるのはプロジェクトオーナーのみです。
+                instance: /api/projects/456
+                projectOwner: 10
+                currentUser: 5
+    NotFound:
+      description: リソースが見つからない
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+          examples:
+            resourceNotFound:
+              summary: リソース不存在
+              value:
+                type: https://api.example.com/errors/not-found
+                title: Resource Not Found
+                status: 404
+                detail: 指定されたプロジェクトが見つかりません
+                instance: /api/projects/999
+                resourceType: Project
+                resourceId: 999
+            foreignKeyNotFound:
+              summary: 外部キーエラー
+              value:
+                type: https://api.example.com/errors/not-found
+                title: Resource Not Found
+                status: 404
+                detail: 指定された顧客が見つかりません
+                instance: /api/projects
+                field: customerID
+                value: 999
+                resourceType: Customer
+    Conflict:
+      description: リソースの競合
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+          examples:
+            duplicateResource:
+              summary: 重複エラー
+              value:
+                type: https://api.example.com/errors/conflict
+                title: Resource Conflict
+                status: 409
+                detail: この顧客には既に同名のプロジェクトが存在します
+                instance: /api/projects
+                conflictFields:
+                - customerID
+                - projectName
+                conflictValues:
+                - 123
+                - 新システム開発
+                existingResourceId: 456
+            idempotencyConflict:
+              summary: Idempotency-Key 重複
+              value:
+                type: https://api.example.com/errors/idempotency-conflict
+                title: Idempotency Key Conflict
+                status: 409
+                detail: この Idempotency-Key は既に使用されていますが、リクエスト内容が異なります
+                instance: /api/projects/456/start
+                idempotencyKey: 550e8400-e29b-41d4-a716-446655440000
+            optimisticLock:
+              summary: 楽観的ロックエラー
+              value:
+                type: https://api.example.com/errors/optimistic-lock-error
+                title: Optimistic Lock Error
+                status: 409
+                detail: リソースが既に他のユーザーによって更新されています
+                instance: /api/projects/456
+                expectedVersion: 5
+                actualVersion: 6
+    UnprocessableEntity:
+      description: ビジネスルール違反
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+          examples:
+            stateTransitionError:
+              summary: 状態遷移エラー
+              value:
+                type: https://api.example.com/errors/invalid-state-transition
+                title: Invalid State Transition
+                status: 422
+                detail: 既に完了したプロジェクトは開始できません
+                instance: /api/projects/456/start
+                currentState: COMPLETED
+                requestedTransition: START
+                allowedTransitions: []
+            businessConstraintViolation:
+              summary: ビジネス制約違反
+              value:
+                type: https://api.example.com/errors/business-constraint-violation
+                title: Business Constraint Violation
+                status: 422
+                detail: 同一人物を同じプロジェクトに重複してアサインできません
+                instance: /api/projects/456/members
+                field: personID
+                value: 3
+                reason: Person 3 is already assigned to this project
+            dateConstraintViolation:
+              summary: 日付制約違反
+              value:
+                type: https://api.example.com/errors/date-constraint-violation
+                title: Date Constraint Violation
+                status: 422
+                detail: プロジェクト完了日は開始日より後である必要があります
+                instance: /api/projects/456/complete
+                field: completeDateTime
+                value: '2026-01-15T10:00:00Z'
+                constraint: completeDateTime > startDateTime
+                startDateTime: '2026-02-01T09:00:00Z'
+    TooManyRequests:
+      description: レート制限超過
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+          description: 再試行可能になるまでの秒数
+        X-RateLimit-Limit:
+          schema:
+            type: integer
+          description: レート制限の上限
+        X-RateLimit-Remaining:
+          schema:
+            type: integer
+          description: 残りリクエスト数
+        X-RateLimit-Reset:
+          schema:
+            type: integer
+          description: レート制限リセット時刻（Unixタイムスタンプ）
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+          examples:
+            rateLimitExceeded:
+              summary: レート制限超過
+              value:
+                type: https://api.example.com/errors/rate-limit-exceeded
+                title: Rate Limit Exceeded
+                status: 429
+                detail: リクエスト制限（100リクエスト/分）を超過しました。60秒後に再試行してください。
+                instance: /api/projects
+                rateLimit:
+                  limit: 100
+                  remaining: 0
+                  resetAt: '2026-01-11T10:00:00Z'
+    InternalServerError:
+      description: サーバー内部エラー
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+          examples:
+            serverError:
+              summary: サーバー内部エラー
+              value:
+                type: https://api.example.com/errors/internal-server-error
+                title: Internal Server Error
+                status: 500
+                detail: 予期しないエラーが発生しました。システム管理者に連絡してください。
+                instance: /api/projects/456/start
+                requestId: req-12345
+                timestamp: '2026-01-11T10:00:00Z'
+    ServiceUnavailable:
+      description: サービス一時停止
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+          description: サービス復旧予定時刻までの秒数
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/ProblemDetails'
+          examples:
+            maintenance:
+              summary: メンテナンス中
+              value:
+                type: https://api.example.com/errors/maintenance
+                title: Service Under Maintenance
+                status: 503
+                detail: システムメンテナンスのため、一時的にサービスを停止しています。1時間後に再試行してください。
+                instance: /api/projects
+                maintenanceWindow:
+                  start: '2026-01-11T10:00:00Z'
+                  end: '2026-01-11T11:00:00Z'
+            databaseUnavailable:
+              summary: データベース接続エラー
+              value:
+                type: https://api.example.com/errors/database-unavailable
+                title: Database Unavailable
+                status: 503
+                detail: データベースに接続できません。しばらくしてから再試行してください。
+                instance: /api/projects/456
+                requestId: req-12345
+  parameters:
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      schema:
+        $ref: '#/components/schemas/IdempotencyKey'
+      description: '冪等性キー（UUID v4）
+
+
+        目的: ネットワーク障害時のリトライで重複イベント記録を防止
+
+
+        使用方法:
+
+        1. クライアント側でUUID v4を生成
+
+        2. 全POST/PUT操作にこのヘッダーを追加
+
+        3. リトライ時は同じキーを使用
+
+
+        サーバー動作:
+
+        - 同じキーで既にリクエスト処理済み → 既存レスポンスを返す（200 OK）
+
+        - 新しいキー → 処理を実行（201 Created）
+
+        - 同じキーで内容が異なる → 409 Conflict
+
+        '
+    Limit:
+      name: limit
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 500
+        default: 50
+      description: 1ページあたりの取得件数
+    Offset:
+      name: offset
+      in: query
+      required: false
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+      description: スキップする件数
+    Sort:
+      name: sort
+      in: query
+      required: false
+      schema:
+        type: string
+      description: 'ソート順を指定
+
+
+        構文:
+
+        - `field`: 昇順
+
+        - `-field`: 降順
+
+        - `field1,-field2`: 複数フィールド（カンマ区切り）
+
+
+        例:
+
+        - `sort=projectName`: プロジェクト名昇順
+
+        - `sort=-createdAt`: 作成日時降順
+
+        - `sort=-createdAt,projectName`: 作成日時降順、次にプロジェクト名昇順
+
+        '
+    ResourceId:
+      name: id
+      in: path
+      required: true
+      schema:
+        $ref: '#/components/schemas/ID'
+      description: リソースID
+  examples:
+    SuccessCreated:
+      summary: 作成成功
+      value:
+        id: 456
+        createdAt: '2026-01-11T10:00:00Z'
+    SuccessUpdated:
+      summary: 更新成功
+      value:
+        id: 456
+        updatedAt: '2026-01-11T10:30:00Z'
+    SuccessDeleted:
+      summary: 削除成功（論理削除）
+      value:
+        id: 456
+        deletedAt: '2026-01-11T11:00:00Z'
+    PaginatedList:
+      summary: ページネーション付き一覧
+      value:
+        total: 150
+        limit: 50
+        offset: 0
+        items:
+        - id: 1
+          name: Item 1
+        - id: 2
+          name: Item 2
+  headers:
+    X-RateLimit-Limit:
+      description: レート制限の上限（リクエスト数/時間）
+      schema:
+        type: integer
+        example: 1000
+    X-RateLimit-Remaining:
+      description: 残りリクエスト数
+      schema:
+        type: integer
+        example: 950
+    X-RateLimit-Reset:
+      description: レート制限リセット時刻（Unixタイムスタンプ）
+      schema:
+        type: integer
+        format: int64
+        example: 1704967200
+    Retry-After:
+      description: 再試行可能になるまでの秒数
+      schema:
+        type: integer
+        example: 60
+    X-Request-Id:
+      description: リクエストID（トレーサビリティ用）
+      schema:
+        type: string
+        format: uuid
+        example: req-550e8400-e29b-41d4-a716-446655440000
+security:
+- BearerAuth: []

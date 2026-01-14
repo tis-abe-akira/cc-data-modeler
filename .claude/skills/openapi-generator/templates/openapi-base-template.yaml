@@ -1,0 +1,275 @@
+openapi: 3.1.0
+info:
+  title: "{project_name} API"
+  version: "1.0.0"
+  description: |
+    イミュータブルデータモデルに基づくRESTful API仕様書
+
+    このAPIは以下の原則に従います:
+    - **CQRS パターン**: Command（POST/PUT）とQuery（GET）の明確な分離
+    - **イベントソーシング**: 全ての状態変更をイベントとして記録
+    - **Idempotency**: 全POST/PUT操作にIdempotency-Keyヘッダーを必須化
+    - **RFC 7807**: Problem Details形式の統一されたエラーレスポンス
+
+    ## ユースケース指向API設計
+
+    このAPIは単純なCRUD操作ではなく、実際のビジネスユースケースに基づいて設計されています。
+
+    **例**: プロジェクト開始
+    - ❌ 単純なCRUD: `PUT /api/projects/{id}` (status: "IN_PROGRESS")
+    - ✅ ユースケース指向: `POST /api/projects/{id}/start`
+
+    ## 認証
+
+    全てのエンドポイントはBearer Token認証が必要です。
+
+    ```
+    Authorization: Bearer <your-token>
+    ```
+  contact:
+    name: API Support
+    email: api-support@example.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: https://api.example.com
+    description: Production Server
+  - url: https://api-staging.example.com
+    description: Staging Server
+  - url: http://localhost:3000
+    description: Local Development Server
+
+tags:
+  # Tags will be auto-generated based on entities
+  # Example:
+  # - name: Projects
+  #   description: プロジェクト関連のエンドポイント
+  # - name: Members
+  #   description: メンバー関連のエンドポイント
+
+paths:
+  # Paths will be auto-generated from entities_classified.json
+  #
+  # Resource entities → GET endpoints
+  # Event entities → POST/PUT endpoints
+  # Junction entities → POST (Assign) / PUT (Replace) endpoints
+  #
+  # Example structure:
+  # /api/projects:
+  #   get: (List projects)
+  #   post: (Create project)
+  # /api/projects/{projectId}:
+  #   get: (Get project details)
+  #   patch: (Update project)
+  #   delete: (Delete project - soft delete)
+  # /api/projects/{projectId}/start:
+  #   post: (Start project - Event)
+  # /api/projects/{projectId}/members:
+  #   get: (List project members)
+  #   post: (Assign member - Junction)
+  # /api/projects/{projectId}/members/current:
+  #   get: (Get current members - State aggregation)
+  # /api/projects/{projectId}/members/{memberId}/replace:
+  #   put: (Replace member - Event)
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT Bearer Token 認証
+
+        トークンの取得方法:
+        1. `/api/auth/login` にクレデンシャルをPOST
+        2. レスポンスから `access_token` を取得
+        3. 全リクエストに `Authorization: Bearer <access_token>` ヘッダーを追加
+
+        トークンの有効期限:
+        - Access Token: 1時間
+        - Refresh Token: 30日
+
+  schemas:
+    # Common schemas will be defined here
+    # Includes:
+    # - ProblemDetails (RFC 7807 error response)
+    # - Pagination (limit, offset, total)
+    # - Entity-specific schemas (auto-generated from entities_classified.json)
+
+  responses:
+    # Standard error responses will be imported from common-components.yaml
+    # Includes:
+    # - BadRequest (400)
+    # - Unauthorized (401)
+    # - Forbidden (403)
+    # - NotFound (404)
+    # - Conflict (409)
+    # - UnprocessableEntity (422)
+    # - TooManyRequests (429)
+    # - InternalServerError (500)
+    # - ServiceUnavailable (503)
+
+  parameters:
+    # Common parameters will be defined here
+    # Includes:
+    # - Pagination (limit, offset)
+    # - Sorting (sort)
+    # - Filtering (various)
+    # - Idempotency-Key (header)
+
+  examples:
+    # Common examples will be defined here
+    # Includes:
+    # - Success responses
+    # - Error responses
+    # - Request bodies
+
+  headers:
+    # Common headers will be defined here
+    # Includes:
+    # - X-RateLimit-Limit
+    # - X-RateLimit-Remaining
+    # - X-RateLimit-Reset
+    # - Retry-After
+
+security:
+  - BearerAuth: []
+
+# API Versioning Strategy
+#
+# This API uses URL versioning:
+# - v1: /api/v1/... (current)
+# - v2: /api/v2/... (future)
+#
+# Breaking changes will result in a new version.
+# Non-breaking changes will be added to the current version.
+
+# Rate Limiting
+#
+# Default rate limits:
+# - Authenticated users: 1000 requests/hour
+# - Unauthenticated users: 100 requests/hour
+#
+# Rate limit headers are included in all responses:
+# - X-RateLimit-Limit: Maximum requests per hour
+# - X-RateLimit-Remaining: Remaining requests
+# - X-RateLimit-Reset: Unix timestamp when limit resets
+
+# Pagination
+#
+# All list endpoints support pagination with query parameters:
+# - limit: Number of items to return (default: 50, max: 500)
+# - offset: Number of items to skip (default: 0)
+#
+# Example: GET /api/projects?limit=20&offset=40
+#
+# Response includes pagination metadata:
+# {
+#   "total": 150,
+#   "limit": 20,
+#   "offset": 40,
+#   "items": [...]
+# }
+
+# Sorting
+#
+# All list endpoints support sorting with the 'sort' query parameter:
+# - sort=field: Sort by field in ascending order
+# - sort=-field: Sort by field in descending order
+# - sort=field1,-field2: Multiple sort fields
+#
+# Example: GET /api/projects?sort=-createdAt,projectName
+#
+# Default sort order varies by endpoint (usually -createdAt)
+
+# Filtering
+#
+# List endpoints support filtering with query parameters:
+# - String fields: Partial match (e.g., ?projectName=Sample)
+# - ID fields: Exact match (e.g., ?customerID=123)
+# - Date fields: Range (e.g., ?createdFrom=2026-01-01&createdTo=2026-12-31)
+# - Boolean fields: Exact match (e.g., ?isActive=true)
+# - Enum fields: Exact match (e.g., ?status=IN_PROGRESS)
+
+# Idempotency
+#
+# All POST and PUT operations require an Idempotency-Key header:
+#
+# Idempotency-Key: <UUID v4>
+#
+# Example:
+# POST /api/projects/123/start
+# Idempotency-Key: 550e8400-e29b-41d4-a716-446655440000
+#
+# Purpose:
+# - Prevents duplicate event recording on network failures
+# - Allows safe retries
+# - Server stores key and returns existing result if duplicate
+#
+# Key management:
+# - Client generates UUID v4
+# - Client reuses same key for retries
+# - Server stores keys for 24 hours
+# - After 24 hours, same key can be reused
+
+# Error Handling
+#
+# All errors follow RFC 7807 Problem Details format:
+#
+# {
+#   "type": "https://api.example.com/errors/validation-error",
+#   "title": "Validation Error",
+#   "status": 400,
+#   "detail": "必須項目が不足しています",
+#   "instance": "/api/projects",
+#   "errors": [
+#     {
+#       "field": "projectName",
+#       "message": "プロジェクト名は必須です",
+#       "value": null
+#     }
+#   ]
+# }
+#
+# Content-Type: application/problem+json
+
+# CORS
+#
+# CORS is enabled for the following origins:
+# - https://app.example.com (Production frontend)
+# - https://app-staging.example.com (Staging frontend)
+# - http://localhost:3000 (Local development)
+#
+# Allowed methods: GET, POST, PUT, PATCH, DELETE, OPTIONS
+# Allowed headers: Authorization, Content-Type, Idempotency-Key
+# Max age: 86400 seconds (24 hours)
+
+# Webhooks
+#
+# The API supports webhooks for real-time event notifications.
+# Register webhook URLs at: /api/webhooks
+#
+# Webhook payload format:
+# {
+#   "eventType": "project.started",
+#   "eventId": "evt-123",
+#   "timestamp": "2026-01-11T10:00:00Z",
+#   "data": { ... }
+# }
+#
+# Webhook signature verification:
+# - X-Webhook-Signature header contains HMAC-SHA256 signature
+# - Verify using your webhook secret
+
+# API Changelog
+#
+# v1.0.0 (2026-01-11)
+# - Initial release
+# - CQRS-based event-driven API
+# - RFC 7807 error responses
+# - Idempotency support
+# - Rate limiting
+# - Pagination and filtering
