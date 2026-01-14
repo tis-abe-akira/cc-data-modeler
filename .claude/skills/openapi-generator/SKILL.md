@@ -770,15 +770,115 @@ python state_aggregation_inferrer.py artifacts/project-record-system/entities_cl
   - リソースエンティティ + 状態集約クエリから生成
   - キャッシュ可能
 
+## Nablarch/Spring拡張機能
+
+このスキルは、**Nablarch/Springフレームワーク統合パターン**をサポートする拡張機能を提供します。
+
+参考リポジトリ: [spring-rest-api](https://github.com/tis-abe-akira/spring-rest-api)
+
+### 有効化方法
+
+```bash
+# Nablarch拡張なし（デフォルト）
+python openapi_generator.py project-record-system
+
+# Nablarch拡張あり
+python openapi_generator.py project-record-system --enable-nablarch
+```
+
+### 拡張内容
+
+#### 1. ドメインバリデーションアノテーション
+
+全プロパティに`x-field-extra-annotation`を追加します。
+
+**例**:
+```yaml
+projectName:
+  type: string
+  x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("projectName")'
+```
+
+#### 2. 詳細な制約情報
+
+DB定義から推論した制約情報をdescriptionに追加します。
+
+**例**:
+```yaml
+projectName:
+  type: string
+  description: |
+    項目名: プロジェクト名
+    ドメイン: projectName
+    制約:
+      - 型: 文字列
+      - 最大長: 200文字
+      - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）
+      - 必須: はい
+  x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("projectName")'
+```
+
+**制約情報の推論内容**:
+- **基本情報**: SQL型（VARCHAR(n)、DECIMAL(p,s)）→ 型、最大長、精度
+- **フォーマット推論**: フィールド名（Email、Phone、URL等）→ フォーマット制約
+- **文字種制約**: 日本語項目名、ID/Code → 許容文字種
+- **必須/任意**: nullable、is_primary_key → 必須フラグ
+
+#### 3. Tags構造拡張
+
+tagsを`[operationId, packageName]`フォーマットに更新します。
+
+**Before**:
+```yaml
+tags:
+  - Projects
+```
+
+**After**:
+```yaml
+tags:
+  - listProjects  # tags[0]: operationId（Controller識別子）
+  - projects      # tags[1]: パッケージ名（コード生成用）
+```
+
+**用途**:
+- **tags[0]**: Spring Controller名の識別子
+- **tags[1]**: パッケージ名（コード生成時のパッケージ配置）
+
+### ドメイン推論パターン
+
+| フィールド名 | ドメイン名 | 説明 |
+|-----------|----------|------|
+| CompanyName | companyName | 通常のcamelCase変換 |
+| ProjectID | projectID | 大文字ID保持 |
+| EmailAddress | emailAddress | 通常のcamelCase変換 |
+
+### パッケージ推論パターン
+
+| エンティティ名 | 分類 | パッケージ名 |
+|------------|------|-----------|
+| Project | resource | projects |
+| ProjectStart | event | projects |
+| PersonAssign | event | persons |
+
+### 詳細情報
+
+詳細なパターンとアルゴリズムについては、以下のリファレンスを参照してください:
+
+- `references/nablarch-domain-patterns.md` - Nablarch拡張パターンの完全なリファレンス
+
 ## 参照
 
 - `scripts/openapi_generator.py` - メイン処理
 - `scripts/event_mapper.py` - イベント→API変換
 - `scripts/resource_mapper.py` - リソース→API変換
 - `scripts/state_aggregation_inferrer.py` - 状態集約推論
+- `scripts/nablarch_enhancer.py` - Nablarch/Spring拡張エンジン ★NEW
+- `scripts/nablarch_utils.py` - Nablarchユーティリティクラス ★NEW
 - `references/cqrs-patterns.md` - CQRSパターンガイド
 - `references/event-naming-patterns.md` - イベント命名→エンドポイント変換ルール
 - `references/rfc7807-problem-details.md` - RFC 7807 エラーレスポンス仕様
+- `references/nablarch-domain-patterns.md` - Nablarch拡張パターンリファレンス ★NEW
 - `templates/openapi-base-template.yaml` - OpenAPI基本構造テンプレート
 - `templates/common-components.yaml` - 共通コンポーネント
 

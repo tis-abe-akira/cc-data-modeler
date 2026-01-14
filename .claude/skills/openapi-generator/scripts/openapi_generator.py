@@ -40,14 +40,16 @@ from state_aggregation_inferrer import StateAggregationInferrer, AggregationEndp
 class OpenAPIGenerator:
     """Main OpenAPI 3.1.0 specification generator."""
 
-    def __init__(self, project_name: str):
+    def __init__(self, project_name: str, enable_nablarch: bool = False):
         """
         Initialize OpenAPI Generator.
 
         Args:
             project_name: Name of the project (e.g., "project-record-system")
+            enable_nablarch: Enable Nablarch/Spring metadata enhancement (default: False)
         """
         self.project_name = project_name
+        self.enable_nablarch_enhancement = enable_nablarch
         self.artifacts_dir = Path(f"artifacts/{project_name}")
 
         # Initialize mappers
@@ -91,6 +93,18 @@ class OpenAPIGenerator:
         # Step 6: Add common components
         print("🧩 Adding common components...")
         self._add_common_components()
+
+        # Step 6.5: Nablarch Enhancement (opt-in)
+        if self.enable_nablarch_enhancement:
+            print("🏯 Adding Nablarch/Spring metadata enhancement...")
+            from nablarch_enhancer import NablarchEnhancer
+            enhancer = NablarchEnhancer()
+            self.openapi_spec = enhancer.enhance(
+                self.openapi_spec,
+                self.entities_classified,
+                self.model
+            )
+            print("✅ Nablarch enhancement completed")
 
         # Step 7: Write output
         output_path = self.artifacts_dir / "openapi.yaml"
@@ -501,22 +515,34 @@ class OpenAPIGenerator:
 
 def main():
     """Main entry point."""
-    if len(sys.argv) < 2:
-        print("Usage: python openapi_generator.py <project-name>")
-        print("\nExample:")
-        print("  python openapi_generator.py project-record-system")
-        sys.exit(1)
+    import argparse
 
-    project_name = sys.argv[1]
+    parser = argparse.ArgumentParser(
+        description='OpenAPI 3.1.0 Generator - Generate OpenAPI specification from immutable data models',
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        epilog="""
+Examples:
+  # Generate OpenAPI without Nablarch enhancement
+  python openapi_generator.py project-record-system
+
+  # Generate OpenAPI with Nablarch/Spring metadata enhancement
+  python openapi_generator.py project-record-system --enable-nablarch
+        """
+    )
+    parser.add_argument('project_name', help='Project name (e.g., project-record-system)')
+    parser.add_argument('--enable-nablarch', action='store_true',
+                       help='Enable Nablarch/Spring metadata enhancement (tags, domain annotations, constraints)')
+
+    args = parser.parse_args()
 
     try:
-        generator = OpenAPIGenerator(project_name)
+        generator = OpenAPIGenerator(args.project_name, enable_nablarch=args.enable_nablarch)
         generator.generate()
     except FileNotFoundError as e:
         print(f"❌ Error: {e}")
         print("\nMake sure the following files exist:")
-        print(f"  - artifacts/{project_name}/entities_classified.json")
-        print(f"  - artifacts/{project_name}/model.json")
+        print(f"  - artifacts/{args.project_name}/entities_classified.json")
+        print(f"  - artifacts/{args.project_name}/model.json")
         sys.exit(1)
     except Exception as e:
         print(f"❌ Error: {e}")

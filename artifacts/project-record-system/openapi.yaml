@@ -92,7 +92,8 @@ paths:
         ページネーション、フィルタリング、ソートに対応しています。'
       operationId: listProjects
       tags:
-      - Projects
+      - listProjects
+      - projects
       responses:
         '200':
           description: 成功
@@ -216,7 +217,8 @@ paths:
       description: プロジェクトを新規作成します。
       operationId: createProject
       tags:
-      - Projects
+      - createProject
+      - projects
       responses:
         '201':
           description: 作成成功
@@ -275,7 +277,8 @@ paths:
       description: プロジェクトの詳細情報を取得します。
       operationId: getProject
       tags:
-      - Projects
+      - getProject
+      - projects
       responses:
         '200':
           description: 成功
@@ -307,7 +310,8 @@ paths:
         更新したいフィールドのみ指定してください。'
       operationId: updateProject
       tags:
-      - Projects
+      - updateProject
+      - projects
       responses:
         '200':
           description: 更新成功
@@ -366,7 +370,8 @@ paths:
         イミュータブルデータモデルでは物理削除を行わず、DeletedAtフィールドに現在時刻を記録します。'
       operationId: deleteProject
       tags:
-      - Projects
+      - deleteProject
+      - projects
       responses:
         '204':
           description: 削除成功
@@ -395,7 +400,8 @@ paths:
         ページネーション、フィルタリング、ソートに対応しています。'
       operationId: listPersons
       tags:
-      - Persons
+      - listPersons
+      - persons
       responses:
         '200':
           description: 成功
@@ -479,7 +485,8 @@ paths:
       description: 人を新規作成します。
       operationId: createPerson
       tags:
-      - Persons
+      - createPerson
+      - persons
       responses:
         '201':
           description: 作成成功
@@ -526,7 +533,8 @@ paths:
       description: 人の詳細情報を取得します。
       operationId: getPerson
       tags:
-      - Persons
+      - getPerson
+      - persons
       responses:
         '200':
           description: 成功
@@ -558,7 +566,8 @@ paths:
         更新したいフィールドのみ指定してください。'
       operationId: updatePerson
       tags:
-      - Persons
+      - updatePerson
+      - persons
       responses:
         '200':
           description: 更新成功
@@ -606,7 +615,8 @@ paths:
         イミュータブルデータモデルでは物理削除を行わず、DeletedAtフィールドに現在時刻を記録します。'
       operationId: deletePerson
       tags:
-      - Persons
+      - deletePerson
+      - persons
       responses:
         '204':
           description: 削除成功
@@ -635,7 +645,8 @@ paths:
         ページネーション、フィルタリング、ソートに対応しています。'
       operationId: listOrganizations
       tags:
-      - Organizations
+      - listOrganizations
+      - organizations
       responses:
         '200':
           description: 成功
@@ -727,7 +738,8 @@ paths:
       description: 組織を新規作成します。
       operationId: createOrganization
       tags:
-      - Organizations
+      - createOrganization
+      - organizations
       responses:
         '201':
           description: 作成成功
@@ -778,7 +790,8 @@ paths:
       description: 組織の詳細情報を取得します。
       operationId: getOrganization
       tags:
-      - Organizations
+      - getOrganization
+      - organizations
       responses:
         '200':
           description: 成功
@@ -810,7 +823,8 @@ paths:
         更新したいフィールドのみ指定してください。'
       operationId: updateOrganization
       tags:
-      - Organizations
+      - updateOrganization
+      - organizations
       responses:
         '200':
           description: 更新成功
@@ -861,7 +875,8 @@ paths:
         イミュータブルデータモデルでは物理削除を行わず、DeletedAtフィールドに現在時刻を記録します。'
       operationId: deleteOrganization
       tags:
-      - Organizations
+      - deleteOrganization
+      - organizations
       responses:
         '204':
           description: 削除成功
@@ -890,7 +905,8 @@ paths:
         ページネーション、フィルタリング、ソートに対応しています。'
       operationId: listCustomers
       tags:
-      - Customers
+      - listCustomers
+      - customers
       responses:
         '200':
           description: 成功
@@ -980,7 +996,8 @@ paths:
       description: 顧客を新規作成します。
       operationId: createCustomer
       tags:
-      - Customers
+      - createCustomer
+      - customers
       responses:
         '201':
           description: 作成成功
@@ -1028,7 +1045,8 @@ paths:
       description: 顧客の詳細情報を取得します。
       operationId: getCustomer
       tags:
-      - Customers
+      - getCustomer
+      - customers
       responses:
         '200':
           description: 成功
@@ -1060,7 +1078,8 @@ paths:
         更新したいフィールドのみ指定してください。'
       operationId: updateCustomer
       tags:
-      - Customers
+      - updateCustomer
+      - customers
       responses:
         '200':
           description: 更新成功
@@ -1108,7 +1127,8 @@ paths:
         イミュータブルデータモデルでは物理削除を行わず、DeletedAtフィールドに現在時刻を記録します。'
       operationId: deleteCustomer
       tags:
-      - Customers
+      - deleteCustomer
+      - customers
       responses:
         '204':
           description: 削除成功
@@ -1137,7 +1157,8 @@ paths:
         ページネーション、フィルタリング、ソートに対応しています。'
       operationId: listIndustrys
       tags:
-      - Industries
+      - listIndustrys
+      - industries
       responses:
         '200':
           description: 成功
@@ -1219,7 +1240,8 @@ paths:
       description: 業界を新規作成します。
       operationId: createIndustry
       tags:
-      - Industries
+      - createIndustry
+      - industries
       responses:
         '201':
           description: 作成成功
@@ -1263,7 +1285,8 @@ paths:
       description: 業界の詳細情報を取得します。
       operationId: getIndustry
       tags:
-      - Industries
+      - getIndustry
+      - industries
       responses:
         '200':
           description: 成功
@@ -1295,7 +1318,8 @@ paths:
         更新したいフィールドのみ指定してください。'
       operationId: updateIndustry
       tags:
-      - Industries
+      - updateIndustry
+      - industries
       responses:
         '200':
           description: 更新成功
@@ -1340,7 +1364,8 @@ paths:
         イミュータブルデータモデルでは物理削除を行わず、DeletedAtフィールドに現在時刻を記録します。'
       operationId: deleteIndustry
       tags:
-      - Industries
+      - deleteIndustry
+      - industries
       responses:
         '204':
           description: 削除成功
@@ -1369,7 +1394,8 @@ paths:
         ページネーション、フィルタリング、ソートに対応しています。'
       operationId: listRoles
       tags:
-      - Roles
+      - listRoles
+      - roles
       responses:
         '200':
           description: 成功
@@ -1451,7 +1477,8 @@ paths:
       description: 役割を新規作成します。
       operationId: createRole
       tags:
-      - Roles
+      - createRole
+      - roles
       responses:
         '201':
           description: 作成成功
@@ -1495,7 +1522,8 @@ paths:
       description: 役割の詳細情報を取得します。
       operationId: getRole
       tags:
-      - Roles
+      - getRole
+      - roles
       responses:
         '200':
           description: 成功
@@ -1527,7 +1555,8 @@ paths:
         更新したいフィールドのみ指定してください。'
       operationId: updateRole
       tags:
-      - Roles
+      - updateRole
+      - roles
       responses:
         '200':
           description: 更新成功
@@ -1572,7 +1601,8 @@ paths:
         イミュータブルデータモデルでは物理削除を行わず、DeletedAtフィールドに現在時刻を記録します。'
       operationId: deleteRole
       tags:
-      - Roles
+      - deleteRole
+      - roles
       responses:
         '204':
           description: 削除成功
@@ -1601,7 +1631,8 @@ paths:
         ページネーション、フィルタリング、ソートに対応しています。'
       operationId: listSupportTypes
       tags:
-      - SupportTypes
+      - listSupportTypes
+      - support_types
       responses:
         '200':
           description: 成功
@@ -1691,7 +1722,8 @@ paths:
       description: 支援タイプを新規作成します。
       operationId: createSupportType
       tags:
-      - SupportTypes
+      - createSupportType
+      - support_types
       responses:
         '201':
           description: 作成成功
@@ -1738,7 +1770,8 @@ paths:
       description: 支援タイプの詳細情報を取得します。
       operationId: getSupportType
       tags:
-      - SupportTypes
+      - getSupportType
+      - support_types
       responses:
         '200':
           description: 成功
@@ -1770,7 +1803,8 @@ paths:
         更新したいフィールドのみ指定してください。'
       operationId: updateSupportType
       tags:
-      - SupportTypes
+      - updateSupportType
+      - support_types
       responses:
         '200':
           description: 更新成功
@@ -1818,7 +1852,8 @@ paths:
         イミュータブルデータモデルでは物理削除を行わず、DeletedAtフィールドに現在時刻を記録します。'
       operationId: deleteSupportType
       tags:
-      - SupportTypes
+      - deleteSupportType
+      - support_types
       responses:
         '204':
           description: 削除成功
@@ -1847,7 +1882,8 @@ paths:
         ページネーション、フィルタリング、ソートに対応しています。'
       operationId: listUsers
       tags:
-      - Users
+      - listUsers
+      - users
       responses:
         '200':
           description: 成功
@@ -1937,7 +1973,8 @@ paths:
       description: ユーザーを新規作成します。
       operationId: createUser
       tags:
-      - Users
+      - createUser
+      - users
       responses:
         '201':
           description: 作成成功
@@ -1985,7 +2022,8 @@ paths:
       description: ユーザーの詳細情報を取得します。
       operationId: getUser
       tags:
-      - Users
+      - getUser
+      - users
       responses:
         '200':
           description: 成功
@@ -2017,7 +2055,8 @@ paths:
         更新したいフィールドのみ指定してください。'
       operationId: updateUser
       tags:
-      - Users
+      - updateUser
+      - users
       responses:
         '200':
           description: 更新成功
@@ -2065,7 +2104,8 @@ paths:
         イミュータブルデータモデルでは物理削除を行わず、DeletedAtフィールドに現在時刻を記録します。'
       operationId: deleteUser
       tags:
-      - Users
+      - deleteUser
+      - users
       responses:
         '204':
           description: 削除成功
@@ -2094,7 +2134,8 @@ paths:
         ページネーション、フィルタリング、ソートに対応しています。'
       operationId: listDevelopmentTypes
       tags:
-      - DevelopmentTypes
+      - listDevelopmentTypes
+      - development_types
       responses:
         '200':
           description: 成功
@@ -2184,7 +2225,8 @@ paths:
       description: 開発種別を新規作成します。
       operationId: createDevelopmentType
       tags:
-      - DevelopmentTypes
+      - createDevelopmentType
+      - development_types
       responses:
         '201':
           description: 作成成功
@@ -2231,7 +2273,8 @@ paths:
       description: 開発種別の詳細情報を取得します。
       operationId: getDevelopmentType
       tags:
-      - DevelopmentTypes
+      - getDevelopmentType
+      - development_types
       responses:
         '200':
           description: 成功
@@ -2263,7 +2306,8 @@ paths:
         更新したいフィールドのみ指定してください。'
       operationId: updateDevelopmentType
       tags:
-      - DevelopmentTypes
+      - updateDevelopmentType
+      - development_types
       responses:
         '200':
           description: 更新成功
@@ -2311,7 +2355,8 @@ paths:
         イミュータブルデータモデルでは物理削除を行わず、DeletedAtフィールドに現在時刻を記録します。'
       operationId: deleteDevelopmentType
       tags:
-      - DevelopmentTypes
+      - deleteDevelopmentType
+      - development_types
       responses:
         '204':
           description: 削除成功
@@ -2340,7 +2385,8 @@ paths:
         ページネーション、フィルタリング、ソートに対応しています。'
       operationId: listDevelopmentMethods
       tags:
-      - DevelopmentMethods
+      - listDevelopmentMethods
+      - development_methods
       responses:
         '200':
           description: 成功
@@ -2430,7 +2476,8 @@ paths:
       description: 開発方式を新規作成します。
       operationId: createDevelopmentMethod
       tags:
-      - DevelopmentMethods
+      - createDevelopmentMethod
+      - development_methods
       responses:
         '201':
           description: 作成成功
@@ -2477,7 +2524,8 @@ paths:
       description: 開発方式の詳細情報を取得します。
       operationId: getDevelopmentMethod
       tags:
-      - DevelopmentMethods
+      - getDevelopmentMethod
+      - development_methods
       responses:
         '200':
           description: 成功
@@ -2509,7 +2557,8 @@ paths:
         更新したいフィールドのみ指定してください。'
       operationId: updateDevelopmentMethod
       tags:
-      - DevelopmentMethods
+      - updateDevelopmentMethod
+      - development_methods
       responses:
         '200':
           description: 更新成功
@@ -2557,7 +2606,8 @@ paths:
         イミュータブルデータモデルでは物理削除を行わず、DeletedAtフィールドに現在時刻を記録します。'
       operationId: deleteDevelopmentMethod
       tags:
-      - DevelopmentMethods
+      - deleteDevelopmentMethod
+      - development_methods
       responses:
         '204':
           description: 削除成功
@@ -2586,7 +2636,8 @@ paths:
         ページネーション、フィルタリング、ソートに対応しています。'
       operationId: listTargetPhases
       tags:
-      - TargetPhases
+      - listTargetPhases
+      - target_phases
       responses:
         '200':
           description: 成功
@@ -2676,7 +2727,8 @@ paths:
       description: 対象工程を新規作成します。
       operationId: createTargetPhase
       tags:
-      - TargetPhases
+      - createTargetPhase
+      - target_phases
       responses:
         '201':
           description: 作成成功
@@ -2723,7 +2775,8 @@ paths:
       description: 対象工程の詳細情報を取得します。
       operationId: getTargetPhase
       tags:
-      - TargetPhases
+      - getTargetPhase
+      - target_phases
       responses:
         '200':
           description: 成功
@@ -2755,7 +2808,8 @@ paths:
         更新したいフィールドのみ指定してください。'
       operationId: updateTargetPhase
       tags:
-      - TargetPhases
+      - updateTargetPhase
+      - target_phases
       responses:
         '200':
           description: 更新成功
@@ -2803,7 +2857,8 @@ paths:
         イミュータブルデータモデルでは物理削除を行わず、DeletedAtフィールドに現在時刻を記録します。'
       operationId: deleteTargetPhase
       tags:
-      - TargetPhases
+      - deleteTargetPhase
+      - target_phases
       responses:
         '204':
           description: 削除成功
@@ -2832,7 +2887,8 @@ paths:
         このエンドポイントはProjectリソースの開始を記録するビジネスイベントです。'
       operationId: startProject
       tags:
-      - Projects
+      - startProject
+      - projects
       responses:
         '201':
           description: 作成成功
@@ -2899,8 +2955,8 @@ paths:
       description: 支援実施イベントを記録します。
       operationId: recordSupportExecute
       tags:
-      - Projects
-      - Events
+      - recordSupportExecute
+      - projects
       responses:
         '201':
           description: 作成成功
@@ -2995,8 +3051,8 @@ paths:
       description: 担当者アサインを記録します。
       operationId: assignPersonToProject
       tags:
-      - Projects
-      - Members
+      - assignPersonToProject
+      - projects
       responses:
         '201':
           description: 作成成功
@@ -3080,8 +3136,8 @@ paths:
         注意: 新しいPersonがnullの場合、離脱として扱います。'
       operationId: replacePersonInProject
       tags:
-      - Projects
-      - Members
+      - replacePersonInProject
+      - projects
       responses:
         '200':
           description: 更新成功
@@ -3169,8 +3225,8 @@ paths:
       description: リスク評価イベントを記録します。
       operationId: evaluateRiskForProject
       tags:
-      - Projects
-      - Risks
+      - evaluateRiskForProject
+      - projects
       responses:
         '201':
           description: 作成成功
@@ -3258,7 +3314,8 @@ paths:
       description: プロジェクト完了イベントを記録します。
       operationId: completeProject
       tags:
-      - Projects
+      - completeProject
+      - projects
       responses:
         '201':
           description: 作成成功
@@ -3347,7 +3404,8 @@ paths:
         ```'
       operationId: getProjectLatestStart
       tags:
-      - Projects
+      - getProjectLatestStart
+      - projects
       responses:
         '200':
           description: 成功
@@ -3382,7 +3440,8 @@ paths:
         ```'
       operationId: getProjectStartHistory
       tags:
-      - Projects
+      - getProjectStartHistory
+      - projects
       responses:
         '200':
           description: 成功
@@ -3434,7 +3493,8 @@ paths:
       description: "Projectのプロジェクト開始サマリーを取得します。\n\nイベントの統計情報を集約して返します。\n\nSQL例:\n```sql\nSELECT\n  ProjectID,\n  COUNT(*) as eventCount,\n  MAX(StartDateTime) as latestEvent,\n  MIN(StartDateTime) as firstEvent\nFROM PROJECTSTART\nWHERE ProjectID = ?\nGROUP BY ProjectID;\n```"
       operationId: getProjectStartSummary
       tags:
-      - Projects
+      - getProjectStartSummary
+      - projects
       responses:
         '200':
           description: 成功
@@ -3484,7 +3544,8 @@ paths:
         ```'
       operationId: getOrganizationJoinLatestEvent
       tags:
-      - OrganizationJoins
+      - getOrganizationJoinLatestEvent
+      - organization_joins
       responses:
         '200':
           description: 成功
@@ -3519,7 +3580,8 @@ paths:
         ```'
       operationId: getOrganizationJoinEventHistory
       tags:
-      - OrganizationJoins
+      - getOrganizationJoinEventHistory
+      - organization_joins
       responses:
         '200':
           description: 成功
@@ -3571,7 +3633,8 @@ paths:
       description: "OrganizationJoinの組織参画サマリーを取得します。\n\nイベントの統計情報を集約して返します。\n\nSQL例:\n```sql\nSELECT\n  OrganizationJoinID,\n  COUNT(*) as eventCount,\n  MAX(JoinDateTime) as latestEvent,\n  MIN(JoinDateTime) as firstEvent\nFROM ORGANIZATIONJOIN\nWHERE OrganizationJoinID = ?\nGROUP BY OrganizationJoinID;\n```"
       operationId: getOrganizationJoinEventSummary
       tags:
-      - OrganizationJoins
+      - getOrganizationJoinEventSummary
+      - organization_joins
       responses:
         '200':
           description: 成功
@@ -3621,7 +3684,8 @@ paths:
         ```'
       operationId: getPersonLatestAssign
       tags:
-      - Persons
+      - getPersonLatestAssign
+      - persons
       responses:
         '200':
           description: 成功
@@ -3656,7 +3720,8 @@ paths:
         ```'
       operationId: getPersonAssignHistory
       tags:
-      - Persons
+      - getPersonAssignHistory
+      - persons
       responses:
         '200':
           description: 成功
@@ -3708,8 +3773,8 @@ paths:
       description: "Projectの現在のPersonアサイン状況を取得します。\n\n置換済みのアサインを除外した現在のメンバー一覧を返します。\n\nSQL例:\n```sql\nSELECT pa.*, p.*\nFROM PERSONASSIGN pa\nJOIN PERSON p ON pa.PersonID = p.PersonID\nWHERE pa.ProjectID = ?\n  AND NOT EXISTS (\n    SELECT 1 FROM PERSONREPLACE pr\n    WHERE pr.ProjectID = pa.ProjectID\n      AND pr.OldPersonID = pa.PersonID\n  );\n```"
       operationId: getProjectCurrentPersons
       tags:
-      - Projects
-      - Members
+      - getProjectCurrentPersons
+      - projects
       responses:
         '200':
           description: 成功
@@ -3736,7 +3801,8 @@ paths:
       description: "Personの担当者アサインサマリーを取得します。\n\nイベントの統計情報を集約して返します。\n\nSQL例:\n```sql\nSELECT\n  PersonID,\n  COUNT(*) as eventCount,\n  MAX(AssignDateTime) as latestEvent,\n  MIN(AssignDateTime) as firstEvent\nFROM PERSONASSIGN\nWHERE PersonID = ?\nGROUP BY PersonID;\n```"
       operationId: getPersonAssignSummary
       tags:
-      - Persons
+      - getPersonAssignSummary
+      - persons
       responses:
         '200':
           description: 成功
@@ -3786,7 +3852,8 @@ paths:
         ```'
       operationId: getPersonLatestReplace
       tags:
-      - Persons
+      - getPersonLatestReplace
+      - persons
       responses:
         '200':
           description: 成功
@@ -3821,7 +3888,8 @@ paths:
         ```'
       operationId: getPersonReplaceHistory
       tags:
-      - Persons
+      - getPersonReplaceHistory
+      - persons
       responses:
         '200':
           description: 成功
@@ -3873,7 +3941,8 @@ paths:
       description: "Personの担当者交代サマリーを取得します。\n\nイベントの統計情報を集約して返します。\n\nSQL例:\n```sql\nSELECT\n  PersonID,\n  COUNT(*) as eventCount,\n  MAX(ReplaceDateTime) as latestEvent,\n  MIN(ReplaceDateTime) as firstEvent\nFROM PERSONREPLACE\nWHERE PersonID = ?\nGROUP BY PersonID;\n```"
       operationId: getPersonReplaceSummary
       tags:
-      - Persons
+      - getPersonReplaceSummary
+      - persons
       responses:
         '200':
           description: 成功
@@ -3923,7 +3992,8 @@ paths:
         ```'
       operationId: getRiskLatestEvaluate
       tags:
-      - Risks
+      - getRiskLatestEvaluate
+      - risks
       responses:
         '200':
           description: 成功
@@ -3958,7 +4028,8 @@ paths:
         ```'
       operationId: getRiskEvaluateHistory
       tags:
-      - Risks
+      - getRiskEvaluateHistory
+      - risks
       responses:
         '200':
           description: 成功
@@ -4010,7 +4081,8 @@ paths:
       description: "Riskのリスク評価サマリーを取得します。\n\nイベントの統計情報を集約して返します。\n\nSQL例:\n```sql\nSELECT\n  RiskID,\n  COUNT(*) as eventCount,\n  MAX(EvaluateDateTime) as latestEvent,\n  MIN(EvaluateDateTime) as firstEvent\nFROM RISKEVALUATE\nWHERE RiskID = ?\nGROUP BY RiskID;\n```"
       operationId: getRiskEvaluateSummary
       tags:
-      - Risks
+      - getRiskEvaluateSummary
+      - risks
       responses:
         '200':
           description: 成功
@@ -4060,7 +4132,8 @@ paths:
         ```'
       operationId: getSupportExecuteLatestEvent
       tags:
-      - SupportExecutes
+      - getSupportExecuteLatestEvent
+      - support_executes
       responses:
         '200':
           description: 成功
@@ -4095,7 +4168,8 @@ paths:
         ```'
       operationId: getSupportExecuteEventHistory
       tags:
-      - SupportExecutes
+      - getSupportExecuteEventHistory
+      - support_executes
       responses:
         '200':
           description: 成功
@@ -4147,7 +4221,8 @@ paths:
       description: "SupportExecuteの支援実施サマリーを取得します。\n\nイベントの統計情報を集約して返します。\n\nSQL例:\n```sql\nSELECT\n  SupportExecuteID,\n  COUNT(*) as eventCount,\n  MAX(ExecuteDateTime) as latestEvent,\n  MIN(ExecuteDateTime) as firstEvent\nFROM SUPPORTEXECUTE\nWHERE SupportExecuteID = ?\nGROUP BY SupportExecuteID;\n```"
       operationId: getSupportExecuteEventSummary
       tags:
-      - SupportExecutes
+      - getSupportExecuteEventSummary
+      - support_executes
       responses:
         '200':
           description: 成功
@@ -4197,7 +4272,8 @@ paths:
         ```'
       operationId: getProjectLatestComplete
       tags:
-      - Projects
+      - getProjectLatestComplete
+      - projects
       responses:
         '200':
           description: 成功
@@ -4232,7 +4308,8 @@ paths:
         ```'
       operationId: getProjectCompleteHistory
       tags:
-      - Projects
+      - getProjectCompleteHistory
+      - projects
       responses:
         '200':
           description: 成功
@@ -4284,7 +4361,8 @@ paths:
       description: "Projectのプロジェクト完了サマリーを取得します。\n\nイベントの統計情報を集約して返します。\n\nSQL例:\n```sql\nSELECT\n  ProjectID,\n  COUNT(*) as eventCount,\n  MAX(CompleteDateTime) as latestEvent,\n  MIN(CompleteDateTime) as firstEvent\nFROM PROJECTCOMPLETE\nWHERE ProjectID = ?\nGROUP BY ProjectID;\n```"
       operationId: getProjectCompleteSummary
       tags:
-      - Projects
+      - getProjectCompleteSummary
+      - projects
       responses:
         '200':
           description: 成功
@@ -4347,28 +4425,35 @@ components:
       properties:
         projectID:
           type: integer
-          description: プロジェクトID
+          description: "項目名: プロジェクトID\nドメイン: projectID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("projectID")'
         projectName:
           type: string
-          description: プロジェクト名
+          description: "項目名: プロジェクト名\nドメイン: projectName\n制約:\n  - 型: 文字列\n  - 最大長: 200文字\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("projectName")'
         customerID:
           type: integer
-          description: 顧客ID
+          description: "項目名: 顧客ID\nドメイン: customerID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: いいえ"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("customerID")'
         estimatedEffort:
           type: string
-          description: 受注規模
+          description: "項目名: 受注規模\nドメイン: estimatedEffort\n制約:\n  - 型: 数値（DECIMAL）\n  - 整数部: 最大8桁\n  - 小数部: 2桁\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("estimatedEffort")'
         plannedStartDate:
           type: string
-          description: 計画開始日
+          description: "項目名: 計画開始日\nドメイン: plannedStartDate\n制約:\n  - 型: 日付\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
           format: date
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("plannedStartDate")'
         plannedEndDate:
           type: string
-          description: 計画終了日
+          description: "項目名: 計画終了日\nドメイン: plannedEndDate\n制約:\n  - 型: 日付\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
           format: date
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("plannedEndDate")'
         createdAt:
           type: string
-          description: 作成日時
+          description: "項目名: 作成日時\nドメイン: createdAt\n制約:\n  - 型: 日時\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
           format: date-time
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("createdAt")'
       description: プロジェクト
     Person:
       type: object
@@ -4377,17 +4462,21 @@ components:
       properties:
         personID:
           type: integer
-          description: 人ID
+          description: "項目名: 人ID\nドメイン: personID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("personID")'
         name:
           type: string
-          description: 氏名
+          description: "項目名: 氏名\nドメイン: name\n制約:\n  - 型: 文字列\n  - 最大長: 100文字\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("name")'
         email:
           type: string
-          description: メールアドレス
+          description: "項目名: メールアドレス\nドメイン: email\n制約:\n  - 型: 文字列\n  - 最大長: 100文字\n  - 文字種: ASCII文字\n  - フォーマット: メールアドレス形式（RFC 5322準拠）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("email")'
         createdAt:
           type: string
-          description: 作成日時
+          description: "項目名: 作成日時\nドメイン: createdAt\n制約:\n  - 型: 日時\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
           format: date-time
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("createdAt")'
       description: 人
     Organization:
       type: object
@@ -4397,20 +4486,25 @@ components:
       properties:
         organizationID:
           type: integer
-          description: 組織ID
+          description: "項目名: 組織ID\nドメイン: organizationID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("organizationID")'
         organizationName:
           type: string
-          description: 組織名
+          description: "項目名: 組織名\nドメイン: organizationName\n制約:\n  - 型: 文字列\n  - 最大長: 100文字\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("organizationName")'
         organizationType:
           type: string
-          description: 組織種別
+          description: "項目名: 組織種別\nドメイン: organizationType\n制約:\n  - 型: 文字列\n  - 最大長: 50文字\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("organizationType")'
         parentOrganizationID:
           type: integer
-          description: 親組織ID
+          description: "項目名: 親組織ID\nドメイン: parentOrganizationID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("parentOrganizationID")'
         createdAt:
           type: string
-          description: 作成日時
+          description: "項目名: 作成日時\nドメイン: createdAt\n制約:\n  - 型: 日時\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
           format: date-time
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("createdAt")'
       description: 組織
     Customer:
       type: object
@@ -4420,17 +4514,21 @@ components:
       properties:
         customerID:
           type: integer
-          description: 顧客ID
+          description: "項目名: 顧客ID\nドメイン: customerID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: いいえ"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("customerID")'
         customerName:
           type: string
-          description: 顧客名
+          description: "項目名: 顧客名\nドメイン: customerName\n制約:\n  - 型: 文字列\n  - 最大長: 200文字\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("customerName")'
         industryID:
           type: integer
-          description: 業界ID
+          description: "項目名: 業界ID\nドメイン: industryID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: いいえ"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("industryID")'
         createdAt:
           type: string
-          description: 作成日時
+          description: "項目名: 作成日時\nドメイン: createdAt\n制約:\n  - 型: 日時\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
           format: date-time
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("createdAt")'
       description: 顧客
     Industry:
       type: object
@@ -4439,14 +4537,17 @@ components:
       properties:
         industryID:
           type: integer
-          description: 業界ID
+          description: "項目名: 業界ID\nドメイン: industryID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: いいえ"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("industryID")'
         industryName:
           type: string
-          description: 業界名
+          description: "項目名: 業界名\nドメイン: industryName\n制約:\n  - 型: 文字列\n  - 最大長: 100文字\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("industryName")'
         createdAt:
           type: string
-          description: 作成日時
+          description: "項目名: 作成日時\nドメイン: createdAt\n制約:\n  - 型: 日時\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
           format: date-time
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("createdAt")'
       description: 業界
     Role:
       type: object
@@ -4455,14 +4556,17 @@ components:
       properties:
         roleID:
           type: integer
-          description: 役割ID
+          description: "項目名: 役割ID\nドメイン: roleID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("roleID")'
         roleName:
           type: string
-          description: 役割名
+          description: "項目名: 役割名\nドメイン: roleName\n制約:\n  - 型: 文字列\n  - 最大長: 50文字\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("roleName")'
         createdAt:
           type: string
-          description: 作成日時
+          description: "項目名: 作成日時\nドメイン: createdAt\n制約:\n  - 型: 日時\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
           format: date-time
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("createdAt")'
       description: 役割
     SupportType:
       type: object
@@ -4471,17 +4575,21 @@ components:
       properties:
         supportTypeID:
           type: integer
-          description: 支援タイプID
+          description: "項目名: 支援タイプID\nドメイン: supportTypeID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("supportTypeID")'
         supportTypeName:
           type: string
-          description: 支援タイプ名
+          description: "項目名: 支援タイプ名\nドメイン: supportTypeName\n制約:\n  - 型: 文字列\n  - 最大長: 100文字\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("supportTypeName")'
         description:
           type: string
-          description: 説明
+          description: "項目名: 説明\nドメイン: description\n制約:\n  - 型: 文字列\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("description")'
         createdAt:
           type: string
-          description: 作成日時
+          description: "項目名: 作成日時\nドメイン: createdAt\n制約:\n  - 型: 日時\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
           format: date-time
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("createdAt")'
       description: 支援タイプ
     User:
       type: object
@@ -4491,17 +4599,21 @@ components:
       properties:
         userID:
           type: integer
-          description: ユーザーID
+          description: "項目名: ユーザーID\nドメイン: userID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: いいえ"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("userID")'
         personID:
           type: integer
-          description: 人ID
+          description: "項目名: 人ID\nドメイン: personID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("personID")'
         username:
           type: string
-          description: ユーザー名
+          description: "項目名: ユーザー名\nドメイン: username\n制約:\n  - 型: 文字列\n  - 最大長: 50文字\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("username")'
         createdAt:
           type: string
-          description: 作成日時
+          description: "項目名: 作成日時\nドメイン: createdAt\n制約:\n  - 型: 日時\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
           format: date-time
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("createdAt")'
       description: ユーザー
     DevelopmentType:
       type: object
@@ -4510,17 +4622,21 @@ components:
       properties:
         developmentTypeID:
           type: integer
-          description: 開発種別ID
+          description: "項目名: 開発種別ID\nドメイン: developmentTypeID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: いいえ"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("developmentTypeID")'
         developmentTypeName:
           type: string
-          description: 開発種別名
+          description: "項目名: 開発種別名\nドメイン: developmentTypeName\n制約:\n  - 型: 文字列\n  - 最大長: 100文字\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("developmentTypeName")'
         description:
           type: string
-          description: 説明
+          description: "項目名: 説明\nドメイン: description\n制約:\n  - 型: 文字列\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("description")'
         createdAt:
           type: string
-          description: 作成日時
+          description: "項目名: 作成日時\nドメイン: createdAt\n制約:\n  - 型: 日時\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
           format: date-time
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("createdAt")'
       description: 開発種別
     DevelopmentMethod:
       type: object
@@ -4529,17 +4645,21 @@ components:
       properties:
         developmentMethodID:
           type: integer
-          description: 開発方式ID
+          description: "項目名: 開発方式ID\nドメイン: developmentMethodID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: いいえ"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("developmentMethodID")'
         developmentMethodName:
           type: string
-          description: 開発方式名
+          description: "項目名: 開発方式名\nドメイン: developmentMethodName\n制約:\n  - 型: 文字列\n  - 最大長: 100文字\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("developmentMethodName")'
         description:
           type: string
-          description: 説明
+          description: "項目名: 説明\nドメイン: description\n制約:\n  - 型: 文字列\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("description")'
         createdAt:
           type: string
-          description: 作成日時
+          description: "項目名: 作成日時\nドメイン: createdAt\n制約:\n  - 型: 日時\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
           format: date-time
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("createdAt")'
       description: 開発方式
     TargetPhase:
       type: object
@@ -4548,17 +4668,21 @@ components:
       properties:
         targetPhaseID:
           type: integer
-          description: 対象工程ID
+          description: "項目名: 対象工程ID\nドメイン: targetPhaseID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: いいえ"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("targetPhaseID")'
         targetPhaseName:
           type: string
-          description: 対象工程名
+          description: "項目名: 対象工程名\nドメイン: targetPhaseName\n制約:\n  - 型: 文字列\n  - 最大長: 100文字\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("targetPhaseName")'
         description:
           type: string
-          description: 説明
+          description: "項目名: 説明\nドメイン: description\n制約:\n  - 型: 文字列\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("description")'
         createdAt:
           type: string
-          description: 作成日時
+          description: "項目名: 作成日時\nドメイン: createdAt\n制約:\n  - 型: 日時\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
           format: date-time
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("createdAt")'
       description: 対象工程
     ProjectStart:
       type: object
@@ -4568,17 +4692,21 @@ components:
       properties:
         eventID:
           type: integer
-          description: イベントID
+          description: "項目名: イベントID\nドメイン: eventID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: いいえ"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("eventID")'
         projectID:
           type: integer
-          description: プロジェクトID
+          description: "項目名: プロジェクトID\nドメイン: projectID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("projectID")'
         startDateTime:
           type: string
-          description: 開始日時
+          description: "項目名: 開始日時\nドメイン: startDateTime\n制約:\n  - 型: 日時\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
           format: date-time
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("startDateTime")'
         registeredBy:
           type: integer
-          description: 登録者ID
+          description: "項目名: 登録者ID\nドメイン: registeredBy\n制約:\n  - 型: 整数\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("registeredBy")'
       description: プロジェクト開始
     OrganizationJoin:
       type: object
@@ -4589,20 +4717,25 @@ components:
       properties:
         eventID:
           type: integer
-          description: イベントID
+          description: "項目名: イベントID\nドメイン: eventID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: いいえ"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("eventID")'
         projectID:
           type: integer
-          description: プロジェクトID
+          description: "項目名: プロジェクトID\nドメイン: projectID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("projectID")'
         organizationID:
           type: integer
-          description: 組織ID
+          description: "項目名: 組織ID\nドメイン: organizationID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("organizationID")'
         joinDateTime:
           type: string
-          description: 参画日時
+          description: "項目名: 参画日時\nドメイン: joinDateTime\n制約:\n  - 型: 日時\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
           format: date-time
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("joinDateTime")'
         registeredBy:
           type: integer
-          description: 登録者ID
+          description: "項目名: 登録者ID\nドメイン: registeredBy\n制約:\n  - 型: 整数\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("registeredBy")'
       description: 組織参画
     PersonAssign:
       type: object
@@ -4614,23 +4747,29 @@ components:
       properties:
         eventID:
           type: integer
-          description: イベントID
+          description: "項目名: イベントID\nドメイン: eventID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: いいえ"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("eventID")'
         projectID:
           type: integer
-          description: プロジェクトID
+          description: "項目名: プロジェクトID\nドメイン: projectID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("projectID")'
         personID:
           type: integer
-          description: 人ID
+          description: "項目名: 人ID\nドメイン: personID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("personID")'
         roleID:
           type: integer
-          description: 役割ID
+          description: "項目名: 役割ID\nドメイン: roleID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("roleID")'
         assignDateTime:
           type: string
-          description: アサイン日時
+          description: "項目名: アサイン日時\nドメイン: assignDateTime\n制約:\n  - 型: 日時\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
           format: date-time
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("assignDateTime")'
         registeredBy:
           type: integer
-          description: 登録者ID
+          description: "項目名: 登録者ID\nドメイン: registeredBy\n制約:\n  - 型: 整数\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("registeredBy")'
       description: 担当者アサイン
     PersonReplace:
       type: object
@@ -4643,26 +4782,33 @@ components:
       properties:
         eventID:
           type: integer
-          description: イベントID
+          description: "項目名: イベントID\nドメイン: eventID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: いいえ"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("eventID")'
         projectID:
           type: integer
-          description: プロジェクトID
+          description: "項目名: プロジェクトID\nドメイン: projectID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("projectID")'
         oldPersonID:
           type: integer
-          description: 旧担当者ID
+          description: "項目名: 旧担当者ID\nドメイン: oldPersonID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("oldPersonID")'
         newPersonID:
           type: integer
-          description: 新担当者ID
+          description: "項目名: 新担当者ID\nドメイン: newPersonID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("newPersonID")'
         roleID:
           type: integer
-          description: 役割ID
+          description: "項目名: 役割ID\nドメイン: roleID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("roleID")'
         replaceDateTime:
           type: string
-          description: 交代日時
+          description: "項目名: 交代日時\nドメイン: replaceDateTime\n制約:\n  - 型: 日時\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
           format: date-time
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("replaceDateTime")'
         registeredBy:
           type: integer
-          description: 登録者ID
+          description: "項目名: 登録者ID\nドメイン: registeredBy\n制約:\n  - 型: 整数\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("registeredBy")'
       description: 担当者交代
     RiskEvaluate:
       type: object
@@ -4672,26 +4818,33 @@ components:
       properties:
         eventID:
           type: integer
-          description: イベントID
+          description: "項目名: イベントID\nドメイン: eventID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: いいえ"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("eventID")'
         projectID:
           type: integer
-          description: プロジェクトID
+          description: "項目名: プロジェクトID\nドメイン: projectID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("projectID")'
         riskRank:
           type: string
-          description: リスクランク
+          description: "項目名: リスクランク\nドメイン: riskRank\n制約:\n  - 型: 文字列\n  - 最大長: 20文字\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("riskRank")'
         evaluateDateTime:
           type: string
-          description: 評価日時
+          description: "項目名: 評価日時\nドメイン: evaluateDateTime\n制約:\n  - 型: 日時\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
           format: date-time
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("evaluateDateTime")'
         evaluatedBy:
           type: integer
-          description: 評価者ID
+          description: "項目名: 評価者ID\nドメイン: evaluatedBy\n制約:\n  - 型: 整数\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("evaluatedBy")'
         isSystemProposed:
           type: boolean
-          description: システム提案フラグ
+          description: "項目名: システム提案フラグ\nドメイン: isSystemProposed\n制約:\n  - 型: ブール値\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("isSystemProposed")'
         isManualAdjusted:
           type: boolean
-          description: 手動調整フラグ
+          description: "項目名: 手動調整フラグ\nドメイン: isManualAdjusted\n制約:\n  - 型: ブール値\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("isManualAdjusted")'
       description: リスク評価
     SupportExecute:
       type: object
@@ -4703,29 +4856,37 @@ components:
       properties:
         eventID:
           type: integer
-          description: イベントID
+          description: "項目名: イベントID\nドメイン: eventID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: いいえ"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("eventID")'
         projectID:
           type: integer
-          description: プロジェクトID
+          description: "項目名: プロジェクトID\nドメイン: projectID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("projectID")'
         supportTypeID:
           type: integer
-          description: 支援タイプID
+          description: "項目名: 支援タイプID\nドメイン: supportTypeID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("supportTypeID")'
         supportPersonID:
           type: integer
-          description: 支援担当者ID
+          description: "項目名: 支援担当者ID\nドメイン: supportPersonID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("supportPersonID")'
         executeDateTime:
           type: string
-          description: 実施日時
+          description: "項目名: 実施日時\nドメイン: executeDateTime\n制約:\n  - 型: 日時\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
           format: date-time
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("executeDateTime")'
         supportContent:
           type: string
-          description: 支援内容
+          description: "項目名: 支援内容\nドメイン: supportContent\n制約:\n  - 型: 文字列\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("supportContent")'
         outcome:
           type: string
-          description: 成果
+          description: "項目名: 成果\nドメイン: outcome\n制約:\n  - 型: 文字列\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("outcome")'
         memo:
           type: string
-          description: メモ
+          description: "項目名: メモ\nドメイン: memo\n制約:\n  - 型: 文字列\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("memo")'
       description: 支援実施
     ProjectComplete:
       type: object
@@ -4735,20 +4896,25 @@ components:
       properties:
         eventID:
           type: integer
-          description: イベントID
+          description: "項目名: イベントID\nドメイン: eventID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: いいえ"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("eventID")'
         projectID:
           type: integer
-          description: プロジェクトID
+          description: "項目名: プロジェクトID\nドメイン: projectID\n制約:\n  - 型: 整数\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("projectID")'
         completeDateTime:
           type: string
-          description: 完了日時
+          description: "項目名: 完了日時\nドメイン: completeDateTime\n制約:\n  - 型: 日時\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
           format: date-time
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("completeDateTime")'
         actualEffort:
           type: string
-          description: 実績工数
+          description: "項目名: 実績工数\nドメイン: actualEffort\n制約:\n  - 型: 数値（DECIMAL）\n  - 整数部: 最大8桁\n  - 小数部: 2桁\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("actualEffort")'
         registeredBy:
           type: integer
-          description: 登録者ID
+          description: "項目名: 登録者ID\nドメイン: registeredBy\n制約:\n  - 型: 整数\n  - 文字種: システム許容文字（全角・半角英数字、ひらがな、カタカナ、漢字、記号）\n  - 必須: はい"
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("registeredBy")'
       description: プロジェクト完了
     ProblemDetails:
       type: object
@@ -4760,25 +4926,30 @@ components:
         type:
           type: string
           format: uri
-          description: エラー種別を示すURI
+          description: "項目名: type\nドメイン: type\n制約:\n  - 型: 文字列\n  - 最大長: 255文字\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
           example: https://api.example.com/errors/validation-error
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("type")'
         title:
           type: string
-          description: エラーの概要
+          description: "項目名: title\nドメイン: title\n制約:\n  - 型: 文字列\n  - 最大長: 255文字\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
           example: Validation Error
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("title")'
         status:
           type: integer
-          description: HTTPステータスコード
+          description: "項目名: status\nドメイン: status\n制約:\n  - 型: 文字列\n  - 最大長: 255文字\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
           example: 400
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("status")'
         detail:
           type: string
-          description: エラーの詳細説明
+          description: "項目名: detail\nドメイン: detail\n制約:\n  - 型: 文字列\n  - 最大長: 255文字\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
           example: 必須項目が不足しています
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("detail")'
         instance:
           type: string
           format: uri
-          description: エラーが発生したリクエストURI
+          description: "項目名: instance\nドメイン: instance\n制約:\n  - 型: 文字列\n  - 最大長: 255文字\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
           example: /api/projects
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("instance")'
       additionalProperties: true
       description: RFC 7807 準拠のエラーレスポンス
     ValidationError:
@@ -4799,23 +4970,27 @@ components:
       properties:
         field:
           type: string
-          description: エラーが発生したフィールド名
+          description: "項目名: field\nドメイン: field\n制約:\n  - 型: 文字列\n  - 最大長: 255文字\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
           example: projectName
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("field")'
         message:
           type: string
-          description: エラーメッセージ
+          description: "項目名: message\nドメイン: message\n制約:\n  - 型: 文字列\n  - 最大長: 255文字\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
           example: プロジェクト名は必須です
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("message")'
         value:
-          description: 送信された値
+          description: "項目名: value\nドメイン: value\n制約:\n  - 型: 文字列\n  - 最大長: 255文字\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
           nullable: true
           example: null
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("value")'
         constraint:
           type: object
-          description: 制約条件
+          description: "項目名: constraint\nドメイン: constraint\n制約:\n  - 型: 文字列\n  - 最大長: 255文字\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
           additionalProperties: true
           example:
             minLength: 1
             maxLength: 200
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("constraint")'
     PaginatedResponse:
       type: object
       required:
@@ -4825,16 +5000,19 @@ components:
       properties:
         total:
           type: integer
-          description: 総件数
+          description: "項目名: total\nドメイン: total\n制約:\n  - 型: 文字列\n  - 最大長: 255文字\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
           example: 150
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("total")'
         limit:
           type: integer
-          description: 1ページあたりの件数
+          description: "項目名: limit\nドメイン: limit\n制約:\n  - 型: 文字列\n  - 最大長: 255文字\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
           example: 50
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("limit")'
         offset:
           type: integer
-          description: スキップした件数
+          description: "項目名: offset\nドメイン: offset\n制約:\n  - 型: 文字列\n  - 最大長: 255文字\n  - 文字種: ASCII文字（英数字、記号）\n  - 必須: はい"
           example: 0
+          x-field-extra-annotation: '@nablarch.core.validation.ee.Domain("offset")'
       additionalProperties: true
     ID:
       type: integer
