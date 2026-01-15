@@ -8,28 +8,28 @@
 -- イミュータブルモデルの特徴: 入金イベントの有無で判定
 -- ================================================
 SELECT
-    i.InvoiceID,
-    i.InvoiceNumber AS "請求番号",
-    c.Name AS "顧客名",
-    i.IssueDate AS "発行日",
-    i.DueDate AS "支払期日",
-    i.Amount AS "請求金額",
-    COALESCE(SUM(p.PaymentAmount), 0) AS "入金済み額",
-    i.Amount - COALESCE(SUM(p.PaymentAmount), 0) AS "未入金額",
+    i.invoice_id,
+    i.invoice_number AS "請求番号",
+    c.name AS "顧客名",
+    i.issue_date AS "発行日",
+    i.due_date AS "支払期日",
+    i.amount AS "請求金額",
+    COALESCE(SUM(p.payment_amount), 0) AS "入金済み額",
+    i.amount - COALESCE(SUM(p.payment_amount), 0) AS "未入金額",
     CASE
-        WHEN CURRENT_DATE > i.DueDate THEN '期日超過'
+        WHEN CURRENT_DATE > i.due_date THEN '期日超過'
         ELSE '期日内'
     END AS "状態"
 FROM
     INVOICE i
-    INNER JOIN CUSTOMER c ON i.CustomerID = c.CustomerID
-    LEFT JOIN PAYMENT p ON i.InvoiceID = p.InvoiceID
+    INNER JOIN CUSTOMER c ON i.customer_id = c.customer_id
+    LEFT JOIN PAYMENT p ON i.invoice_id = p.invoice_id
 GROUP BY
-    i.InvoiceID, i.InvoiceNumber, c.Name, i.IssueDate, i.DueDate, i.Amount
+    i.invoice_id, i.invoice_number, c.name, i.issue_date, i.due_date, i.amount
 HAVING
-    i.Amount - COALESCE(SUM(p.PaymentAmount), 0) > 0
+    i.amount - COALESCE(SUM(p.payment_amount), 0) > 0
 ORDER BY
-    i.DueDate;
+    i.due_date;
 
 -- ================================================
 -- 【クエリ2】確認状送付が必要な請求書
@@ -37,64 +37,64 @@ ORDER BY
 -- ================================================
 WITH UnpaidInvoices AS (
     SELECT
-        i.InvoiceID,
-        i.InvoiceNumber,
-        c.Name AS CustomerName,
-        i.DueDate,
-        i.Amount,
-        COALESCE(SUM(p.PaymentAmount), 0) AS PaidAmount
+        i.invoice_id,
+        i.invoice_number,
+        c.name AS customer_name,
+        i.due_date,
+        i.amount,
+        COALESCE(SUM(p.payment_amount), 0) AS paid_amount
     FROM
         INVOICE i
-        INNER JOIN CUSTOMER c ON i.CustomerID = c.CustomerID
-        LEFT JOIN PAYMENT p ON i.InvoiceID = p.InvoiceID
+        INNER JOIN CUSTOMER c ON i.customer_id = c.customer_id
+        LEFT JOIN PAYMENT p ON i.invoice_id = p.invoice_id
     WHERE
-        i.DueDate < CURRENT_DATE
+        i.due_date < CURRENT_DATE
     GROUP BY
-        i.InvoiceID, i.InvoiceNumber, c.Name, i.DueDate, i.Amount
+        i.invoice_id, i.invoice_number, c.name, i.due_date, i.amount
     HAVING
-        i.Amount - COALESCE(SUM(p.PaymentAmount), 0) > 0
+        i.amount - COALESCE(SUM(p.payment_amount), 0) > 0
 )
 SELECT
-    u.InvoiceID,
-    u.InvoiceNumber AS "請求番号",
-    u.CustomerName AS "顧客名",
-    u.DueDate AS "支払期日",
-    CURRENT_DATE - u.DueDate AS "超過日数",
-    u.Amount AS "請求金額",
-    u.PaidAmount AS "入金済み額",
-    u.Amount - u.PaidAmount AS "未入金額"
+    u.invoice_id,
+    u.invoice_number AS "請求番号",
+    u.customer_name AS "顧客名",
+    u.due_date AS "支払期日",
+    CURRENT_DATE - u.due_date AS "超過日数",
+    u.amount AS "請求金額",
+    u.paid_amount AS "入金済み額",
+    u.amount - u.paid_amount AS "未入金額"
 FROM
     UnpaidInvoices u
 WHERE
     NOT EXISTS (
         SELECT 1
         FROM CONFIRMATION_SEND cs
-        WHERE cs.InvoiceID = u.InvoiceID
+        WHERE cs.invoice_id = u.invoice_id
     )
 ORDER BY
-    u.DueDate;
+    u.due_date;
 
 -- ================================================
 -- 【クエリ3】入金状況サマリー（顧客別）
 -- イミュータブルモデルの特徴: 集約で現在の状態を計算
 -- ================================================
 SELECT
-    c.CustomerID,
-    c.Name AS "顧客名",
-    COUNT(DISTINCT i.InvoiceID) AS "請求書数",
-    SUM(i.Amount) AS "請求総額",
-    COALESCE(SUM(p.PaymentAmount), 0) AS "入金総額",
-    SUM(i.Amount) - COALESCE(SUM(p.PaymentAmount), 0) AS "未入金総額",
+    c.customer_id,
+    c.name AS "顧客名",
+    COUNT(DISTINCT i.invoice_id) AS "請求書数",
+    SUM(i.amount) AS "請求総額",
+    COALESCE(SUM(p.payment_amount), 0) AS "入金総額",
+    SUM(i.amount) - COALESCE(SUM(p.payment_amount), 0) AS "未入金総額",
     ROUND(
-        COALESCE(SUM(p.PaymentAmount), 0) * 100.0 / NULLIF(SUM(i.Amount), 0),
+        COALESCE(SUM(p.payment_amount), 0) * 100.0 / NULLIF(SUM(i.amount), 0),
         2
     ) AS "入金率(%)"
 FROM
     CUSTOMER c
-    INNER JOIN INVOICE i ON c.CustomerID = i.CustomerID
-    LEFT JOIN PAYMENT p ON i.InvoiceID = p.InvoiceID
+    INNER JOIN INVOICE i ON c.customer_id = i.customer_id
+    LEFT JOIN PAYMENT p ON i.invoice_id = p.invoice_id
 GROUP BY
-    c.CustomerID, c.Name
+    c.customer_id, c.name
 ORDER BY
     "未入金総額" DESC;
 
@@ -105,87 +105,87 @@ ORDER BY
 WITH AllEvents AS (
     -- 請求書送付イベント
     SELECT
-        i.InvoiceID,
-        i.InvoiceNumber,
-        c.Name AS CustomerName,
-        '請求書送付' AS EventType,
-        isnd.SendDateTime AS EventDateTime,
-        isnd.SendMethod AS Detail,
-        NULL::NUMERIC AS Amount
+        i.invoice_id,
+        i.invoice_number,
+        c.name AS customer_name,
+        '請求書送付' AS event_type,
+        isnd.send_date_time AS event_date_time,
+        isnd.send_method AS detail,
+        NULL::NUMERIC AS amount
     FROM
         INVOICE_SEND isnd
-        INNER JOIN INVOICE i ON isnd.InvoiceID = i.InvoiceID
-        INNER JOIN CUSTOMER c ON i.CustomerID = c.CustomerID
+        INNER JOIN INVOICE i ON isnd.invoice_id = i.invoice_id
+        INNER JOIN CUSTOMER c ON i.customer_id = c.customer_id
 
     UNION ALL
 
     -- 入金イベント
     SELECT
-        i.InvoiceID,
-        i.InvoiceNumber,
-        c.Name AS CustomerName,
-        '入金' AS EventType,
-        p.PaymentDateTime AS EventDateTime,
-        p.PaymentMethod AS Detail,
-        p.PaymentAmount AS Amount
+        i.invoice_id,
+        i.invoice_number,
+        c.name AS customer_name,
+        '入金' AS event_type,
+        p.payment_date_time AS event_date_time,
+        p.payment_method AS detail,
+        p.payment_amount AS amount
     FROM
         PAYMENT p
-        INNER JOIN INVOICE i ON p.InvoiceID = i.InvoiceID
-        INNER JOIN CUSTOMER c ON i.CustomerID = c.CustomerID
+        INNER JOIN INVOICE i ON p.invoice_id = i.invoice_id
+        INNER JOIN CUSTOMER c ON i.customer_id = c.customer_id
 
     UNION ALL
 
     -- 確認状送付イベント
     SELECT
-        i.InvoiceID,
-        i.InvoiceNumber,
-        c.Name AS CustomerName,
-        '確認状送付' AS EventType,
-        cs.SendDateTime AS EventDateTime,
-        cs.SendMethod AS Detail,
-        NULL::NUMERIC AS Amount
+        i.invoice_id,
+        i.invoice_number,
+        c.name AS customer_name,
+        '確認状送付' AS event_type,
+        cs.send_date_time AS event_date_time,
+        cs.send_method AS detail,
+        NULL::NUMERIC AS amount
     FROM
         CONFIRMATION_SEND cs
-        INNER JOIN INVOICE i ON cs.InvoiceID = i.InvoiceID
-        INNER JOIN CUSTOMER c ON i.CustomerID = c.CustomerID
+        INNER JOIN INVOICE i ON cs.invoice_id = i.invoice_id
+        INNER JOIN CUSTOMER c ON i.customer_id = c.customer_id
 )
 SELECT
-    InvoiceNumber AS "請求番号",
-    CustomerName AS "顧客名",
-    EventType AS "イベント種別",
-    EventDateTime AS "発生日時",
-    Detail AS "詳細",
-    Amount AS "金額"
+    invoice_number AS "請求番号",
+    customer_name AS "顧客名",
+    event_type AS "イベント種別",
+    event_date_time AS "発生日時",
+    detail AS "詳細",
+    amount AS "金額"
 FROM
     AllEvents
 ORDER BY
-    InvoiceID, EventDateTime;
+    invoice_id, event_date_time;
 
 -- ================================================
 -- 【クエリ5】分割払いの検出
 -- 複数回の入金イベントがある請求書を特定
 -- ================================================
 SELECT
-    i.InvoiceNumber AS "請求番号",
-    c.Name AS "顧客名",
-    i.Amount AS "請求金額",
-    COUNT(p.PaymentID) AS "入金回数",
+    i.invoice_number AS "請求番号",
+    c.name AS "顧客名",
+    i.amount AS "請求金額",
+    COUNT(p.payment_id) AS "入金回数",
     STRING_AGG(
-        p.PaymentDateTime::DATE || ': ' || p.PaymentAmount || '円',
+        p.payment_date_time::DATE || ': ' || p.payment_amount || '円',
         ', '
-        ORDER BY p.PaymentDateTime
+        ORDER BY p.payment_date_time
     ) AS "入金履歴",
-    SUM(p.PaymentAmount) AS "入金総額"
+    SUM(p.payment_amount) AS "入金総額"
 FROM
     INVOICE i
-    INNER JOIN CUSTOMER c ON i.CustomerID = c.CustomerID
-    INNER JOIN PAYMENT p ON i.InvoiceID = p.InvoiceID
+    INNER JOIN CUSTOMER c ON i.customer_id = c.customer_id
+    INNER JOIN PAYMENT p ON i.invoice_id = p.invoice_id
 GROUP BY
-    i.InvoiceID, i.InvoiceNumber, c.Name, i.Amount
+    i.invoice_id, i.invoice_number, c.name, i.amount
 HAVING
-    COUNT(p.PaymentID) > 1
+    COUNT(p.payment_id) > 1
 ORDER BY
-    COUNT(p.PaymentID) DESC;
+    COUNT(p.payment_id) DESC;
 
 -- ================================================
 -- 【クエリ6】督促が必要な顧客リスト
@@ -193,33 +193,33 @@ ORDER BY
 -- ================================================
 WITH OverdueUnpaid AS (
     SELECT
-        i.CustomerID,
-        i.InvoiceID,
-        i.Amount,
-        COALESCE(SUM(p.PaymentAmount), 0) AS PaidAmount
+        i.customer_id,
+        i.invoice_id,
+        i.amount,
+        COALESCE(SUM(p.payment_amount), 0) AS paid_amount
     FROM
         INVOICE i
-        LEFT JOIN PAYMENT p ON i.InvoiceID = p.InvoiceID
+        LEFT JOIN PAYMENT p ON i.invoice_id = p.invoice_id
     WHERE
-        i.DueDate < CURRENT_DATE
+        i.due_date < CURRENT_DATE
     GROUP BY
-        i.CustomerID, i.InvoiceID, i.Amount
+        i.customer_id, i.invoice_id, i.amount
     HAVING
-        i.Amount - COALESCE(SUM(p.PaymentAmount), 0) > 0
+        i.amount - COALESCE(SUM(p.payment_amount), 0) > 0
 )
 SELECT
-    c.CustomerID,
-    c.Name AS "顧客名",
-    c.Phone AS "電話番号",
-    COUNT(o.InvoiceID) AS "未入金請求書数",
-    SUM(o.Amount - o.PaidAmount) AS "未入金総額",
-    MAX(cs.SendDateTime) AS "最終確認状送付日"
+    c.customer_id,
+    c.name AS "顧客名",
+    c.phone AS "電話番号",
+    COUNT(o.invoice_id) AS "未入金請求書数",
+    SUM(o.amount - o.paid_amount) AS "未入金総額",
+    MAX(cs.send_date_time) AS "最終確認状送付日"
 FROM
     CUSTOMER c
-    INNER JOIN OverdueUnpaid o ON c.CustomerID = o.CustomerID
-    LEFT JOIN CONFIRMATION_SEND cs ON o.InvoiceID = cs.InvoiceID
+    INNER JOIN OverdueUnpaid o ON c.customer_id = o.customer_id
+    LEFT JOIN CONFIRMATION_SEND cs ON o.invoice_id = cs.invoice_id
 GROUP BY
-    c.CustomerID, c.Name, c.Phone
+    c.customer_id, c.name, c.phone
 ORDER BY
     "未入金総額" DESC;
 
@@ -230,33 +230,33 @@ ORDER BY
 -- 例: 請求書ID=2 の詳細情報を取得
 WITH InvoiceDetail AS (
     SELECT
-        i.InvoiceID,
-        i.InvoiceNumber,
-        c.Name AS CustomerName,
-        c.Phone AS CustomerPhone,
-        i.IssueDate,
-        i.DueDate,
-        i.Amount,
-        COALESCE(SUM(p.PaymentAmount), 0) AS PaidAmount,
-        i.Amount - COALESCE(SUM(p.PaymentAmount), 0) AS UnpaidAmount
+        i.invoice_id,
+        i.invoice_number,
+        c.name AS customer_name,
+        c.phone AS customer_phone,
+        i.issue_date,
+        i.due_date,
+        i.amount,
+        COALESCE(SUM(p.payment_amount), 0) AS paid_amount,
+        i.amount - COALESCE(SUM(p.payment_amount), 0) AS unpaid_amount
     FROM
         INVOICE i
-        INNER JOIN CUSTOMER c ON i.CustomerID = c.CustomerID
-        LEFT JOIN PAYMENT p ON i.InvoiceID = p.InvoiceID
+        INNER JOIN CUSTOMER c ON i.customer_id = c.customer_id
+        LEFT JOIN PAYMENT p ON i.invoice_id = p.invoice_id
     WHERE
-        i.InvoiceID = 2
+        i.invoice_id = 2
     GROUP BY
-        i.InvoiceID, i.InvoiceNumber, c.Name, c.Phone, i.IssueDate, i.DueDate, i.Amount
+        i.invoice_id, i.invoice_number, c.name, c.phone, i.issue_date, i.due_date, i.amount
 )
 SELECT
     d.*,
-    (SELECT SendDateTime FROM INVOICE_SEND WHERE InvoiceID = d.InvoiceID) AS "請求書送付日時",
-    (SELECT COUNT(*) FROM PAYMENT WHERE InvoiceID = d.InvoiceID) AS "入金回数",
-    (SELECT COUNT(*) FROM CONFIRMATION_SEND WHERE InvoiceID = d.InvoiceID) AS "確認状送付回数",
+    (SELECT send_date_time FROM INVOICE_SEND WHERE invoice_id = d.invoice_id) AS "請求書送付日時",
+    (SELECT COUNT(*) FROM PAYMENT WHERE invoice_id = d.invoice_id) AS "入金回数",
+    (SELECT COUNT(*) FROM CONFIRMATION_SEND WHERE invoice_id = d.invoice_id) AS "確認状送付回数",
     CASE
-        WHEN d.UnpaidAmount = 0 THEN '入金完了'
-        WHEN d.DueDate >= CURRENT_DATE THEN '期日内未入金'
-        WHEN EXISTS (SELECT 1 FROM CONFIRMATION_SEND WHERE InvoiceID = d.InvoiceID) THEN '督促済み未入金'
+        WHEN d.unpaid_amount = 0 THEN '入金完了'
+        WHEN d.due_date >= CURRENT_DATE THEN '期日内未入金'
+        WHEN EXISTS (SELECT 1 FROM CONFIRMATION_SEND WHERE invoice_id = d.invoice_id) THEN '督促済み未入金'
         ELSE '期日超過未入金'
     END AS "ステータス"
 FROM

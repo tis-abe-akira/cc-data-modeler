@@ -37,6 +37,7 @@ Create `artifacts/{project-name}/schema.sql` following PostgreSQL best practices
 - Create indexes for foreign keys and datetime columns
 - Use `GENERATED ALWAYS AS IDENTITY` for primary keys
 - Set `ON DELETE RESTRICT` for foreign keys
+- **カラム名はすべて小文字snake_caseを使用**
 
 **Example Structure:**
 
@@ -52,13 +53,13 @@ Create `artifacts/{project-name}/schema.sql` following PostgreSQL best practices
 -- ================================================
 
 CREATE TABLE RESOURCE_NAME (
-    ResourceID INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    Name VARCHAR(100) NOT NULL,
-    CreatedAt TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+    resource_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 COMMENT ON TABLE RESOURCE_NAME IS 'リソース名';
-COMMENT ON COLUMN RESOURCE_NAME.ResourceID IS 'リソースID';
+COMMENT ON COLUMN RESOURCE_NAME.resource_id IS 'リソースID';
 -- ... more comments
 
 -- ================================================
@@ -66,11 +67,11 @@ COMMENT ON COLUMN RESOURCE_NAME.ResourceID IS 'リソースID';
 -- ================================================
 
 CREATE TABLE JUNCTION_TABLE (
-    ResourceID INTEGER NOT NULL,
-    TagID INTEGER NOT NULL,
-    PRIMARY KEY (ResourceID, TagID),
-    CONSTRAINT FK_JUNCTION_RESOURCE FOREIGN KEY (ResourceID)
-        REFERENCES RESOURCE_NAME(ResourceID) ON DELETE RESTRICT
+    resource_id INTEGER NOT NULL,
+    tag_id INTEGER NOT NULL,
+    PRIMARY KEY (resource_id, tag_id),
+    CONSTRAINT fk_junction_resource FOREIGN KEY (resource_id)
+        REFERENCES RESOURCE_NAME(resource_id) ON DELETE RESTRICT
 );
 
 -- ================================================
@@ -78,19 +79,19 @@ CREATE TABLE JUNCTION_TABLE (
 -- ================================================
 
 CREATE TABLE EVENT_NAME (
-    EventID INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    ResourceID INTEGER NOT NULL,
-    EventDateTime TIMESTAMP WITH TIME ZONE NOT NULL,
-    CONSTRAINT FK_EVENT_RESOURCE FOREIGN KEY (ResourceID)
-        REFERENCES RESOURCE_NAME(ResourceID) ON DELETE RESTRICT
+    event_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    resource_id INTEGER NOT NULL,
+    event_date_time TIMESTAMP WITH TIME ZONE NOT NULL,
+    CONSTRAINT fk_event_resource FOREIGN KEY (resource_id)
+        REFERENCES RESOURCE_NAME(resource_id) ON DELETE RESTRICT
 );
 
 -- ================================================
 -- インデックス（パフォーマンス最適化）
 -- ================================================
 
-CREATE INDEX IDX_EVENT_RESOURCE ON EVENT_NAME(ResourceID);
-CREATE INDEX IDX_EVENT_DATETIME ON EVENT_NAME(EventDateTime);
+CREATE INDEX idx_event_resource ON EVENT_NAME(resource_id);
+CREATE INDEX idx_event_datetime ON EVENT_NAME(event_date_time);
 ```
 
 For detailed rules, see [postgresql-best-practices.md](references/postgresql-best-practices.md).
@@ -128,17 +129,17 @@ Design 2-4 scenarios that demonstrate:
 -- ================================================
 
 -- Master data
-INSERT INTO MASTER_TABLE (Name, ...) VALUES
+INSERT INTO MASTER_TABLE (name, ...) VALUES
 ('Item 1', ...),
 ('Item 2', ...);
 
 -- Resource data
-INSERT INTO RESOURCE_TABLE (Name, ...) VALUES
+INSERT INTO RESOURCE_TABLE (name, ...) VALUES
 ('Resource A', ...),
 ('Resource B', ...);
 
 -- Junction data (tags)
-INSERT INTO JUNCTION_TABLE (ResourceID, TagID) VALUES
+INSERT INTO JUNCTION_TABLE (resource_id, tag_id) VALUES
 (1, 1), (1, 2), (2, 3);
 
 -- ================================================
@@ -199,24 +200,24 @@ Create `artifacts/{project-name}/query_examples.sql` with 8-12 practical queries
 -- 【クエリ1】Current state from events
 -- イミュータブルモデルの特徴: イベントから現在の状態を集約
 -- ================================================
-WITH LatestEvent AS (
+WITH latest_event AS (
     SELECT
         *,
-        ROW_NUMBER() OVER (PARTITION BY ResourceID ORDER BY EventDateTime DESC) AS rn
+        ROW_NUMBER() OVER (PARTITION BY resource_id ORDER BY event_date_time DESC) AS rn
     FROM EVENT_TABLE
 )
-SELECT * FROM LatestEvent WHERE rn = 1;
+SELECT * FROM latest_event WHERE rn = 1;
 
 -- ================================================
 -- 【クエリ2】Aggregation example
 -- ================================================
 SELECT
-    r.ResourceID,
-    COUNT(e.EventID) AS EventCount,
-    SUM(e.Amount) AS TotalAmount
+    r.resource_id,
+    COUNT(e.event_id) AS event_count,
+    SUM(e.amount) AS total_amount
 FROM RESOURCE r
-LEFT JOIN EVENT e ON r.ResourceID = e.ResourceID
-GROUP BY r.ResourceID;
+LEFT JOIN EVENT e ON r.resource_id = e.resource_id
+GROUP BY r.resource_id;
 
 -- ... 6-10 more queries
 ```
@@ -248,3 +249,4 @@ After completion, the following files should exist in `artifacts/{project-name}/
 - Include Japanese comments throughout for clarity
 - Balance realism with demonstration of immutable model patterns
 - Queries should showcase both practical use cases and advanced patterns
+- **カラム名はすべて小文字snake_caseを使用（CamelCase禁止）**

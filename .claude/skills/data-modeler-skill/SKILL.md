@@ -207,11 +207,11 @@ AIが推定した基本的なユースケースを叩き台として、ユーザ
 3. **登録実行**
    - Create: PROJECT レコード
    - 重複チェック: 同一顧客×同一プロジェクト名 → 409 Conflict
-   - レスポンス: 201 Created + ProjectID
+   - レスポンス: 201 Created + project_id
 
 ### API マッピング
 - エンドポイント: POST /api/projects
-- Request Body: { customerID, projectName, plannedStartDate, contractAmount, description?, developmentTypeID? }
+- Request Body: { customer_id, project_name, planned_start_date, contract_amount, description?, developmentTypeID? }
 - Success: 201 Created
 - Errors: 400 (バリデーション), 404 (顧客不存在), 409 (重複)
 ```
@@ -346,7 +346,7 @@ completed_phases:
       "attributes": [
         {
           "japanese": "顧客ID",
-          "english": "CustomerID",
+          "english": "customer_id",
           "type": "INT",
           "is_primary_key": true
         },
@@ -366,25 +366,25 @@ completed_phases:
       "english": "InvoiceSend",
       "datetime_attribute": {
         "japanese": "送付日時",
-        "english": "SendDateTime",
+        "english": "send_date_time",
         "type": "TIMESTAMP"
       },
       "attributes": [
         {
           "japanese": "イベントID",
-          "english": "EventID",
+          "english": "event_id",
           "type": "INT",
           "is_primary_key": true
         },
         {
           "japanese": "送付日時",
-          "english": "SendDateTime",
+          "english": "send_date_time",
           "type": "TIMESTAMP",
           "is_primary_key": false
         },
         {
           "japanese": "送付方法",
-          "english": "SendMethod",
+          "english": "send_method",
           "type": "VARCHAR(50)",
           "is_primary_key": false
         }
@@ -435,11 +435,11 @@ AIが推定した属性を叩き台として、ユーザーの業務知識を反
 
 | 属性名（日本語） | 属性名（英語） | 型 | 主キー | 備考 |
 |---------------|--------------|-----|--------|------|
-| 顧客ID | CustomerID | INT | ✓ | |
-| 顧客名 | Name | VARCHAR(100) | | |
-| 住所 | Address | VARCHAR(255) | | |
-| 電話番号 | Phone | VARCHAR(20) | | |
-| 作成日時 | CreatedAt | TIMESTAMP | | |
+| 顧客ID | customer_id | INT | ✓ | |
+| 顧客名 | name | VARCHAR(100) | | |
+| 住所 | address | VARCHAR(255) | | |
+| 電話番号 | phone | VARCHAR(20) | | |
+| 作成日時 | created_at | TIMESTAMP | | |
 
 **説明**: 請求書を受け取る主体。継続的に存在し管理される
 
@@ -449,12 +449,12 @@ AIが推定した属性を叩き台として、ユーザーの業務知識を反
 
 | 属性名（日本語） | 属性名（英語） | 型 | 主キー | 備考 |
 |---------------|--------------|-----|--------|------|
-| 請求書ID | InvoiceID | INT | ✓ | |
-| 顧客ID | CustomerID | INT | | 外部キー |
-| 請求番号 | InvoiceNumber | VARCHAR(50) | | |
-| 発行日 | IssueDate | DATE | | |
-| 請求金額 | Amount | DECIMAL(10,2) | | |
-| 支払期日 | DueDate | DATE | | |
+| 請求書ID | invoice_id | INT | ✓ | |
+| 顧客ID | customer_id | INT | | 外部キー |
+| 請求番号 | invoice_number | VARCHAR(50) | | |
+| 発行日 | issue_date | DATE | | |
+| 請求金額 | amount | DECIMAL(10,2) | | |
+| 支払期日 | due_date | DATE | | |
 
 **説明**: 発行された請求文書。顧客に対する請求内容を保持
 
@@ -464,15 +464,15 @@ AIが推定した属性を叩き台として、ユーザーの業務知識を反
 
 ### InvoiceSend（請求書送付）
 
-**日時属性**: 送付日時（SendDateTime）- TIMESTAMP
+**日時属性**: 送付日時（send_date_time）- TIMESTAMP
 
 | 属性名（日本語） | 属性名（英語） | 型 | 主キー | 備考 |
 |---------------|--------------|-----|--------|------|
-| イベントID | EventID | INT | ✓ | |
-| 請求書ID | InvoiceID | INT | | 外部キー |
-| 顧客ID | CustomerID | INT | | 外部キー |
-| 送付日時 | SendDateTime | TIMESTAMP | | **日時属性** |
-| 送付方法 | SendMethod | VARCHAR(50) | | |
+| イベントID | event_id | INT | ✓ | |
+| 請求書ID | invoice_id | INT | | 外部キー |
+| 顧客ID | customer_id | INT | | 外部キー |
+| 送付日時 | send_date_time | TIMESTAMP | | **日時属性** |
+| 送付方法 | send_method | VARCHAR(50) | | |
 
 **説明**: 請求書を顧客に送付した事実。特定時点で発生した不変のイベント
 ```
@@ -562,11 +562,11 @@ Customer（顧客）の属性をどう修正しますか？
 ```
 削除する属性を選択してください:
 
-1. 顧客ID (CustomerID) - INT - 主キー
-2. 顧客名 (Name) - VARCHAR(100)
-3. 住所 (Address) - VARCHAR(255)
-4. 電話番号 (Phone) - VARCHAR(20)
-5. 作成日時 (CreatedAt) - TIMESTAMP
+1. 顧客ID (customer_id) - INT - 主キー
+2. 顧客名 (name) - VARCHAR(100)
+3. 住所 (address) - VARCHAR(255)
+4. 電話番号 (phone) - VARCHAR(20)
+5. 作成日時 (created_at) - TIMESTAMP
 
 番号を入力してください:
 ```
@@ -582,7 +582,7 @@ Customer（顧客）の属性をどう修正しますか？
 [エラー] 主キーは削除できません。
 
 理由: すべてのエンティティには必ず1つの主キーが必要です。
-現在の主キー: CustomerID
+現在の主キー: customer_id
 
 対処方法:
 1. 別の属性を主キーに設定する
@@ -595,7 +595,7 @@ Customer（顧客）の属性をどう修正しますか？
 理由: イベントエンティティは必ず1つの日時属性を持つ必要があります。
       これはイミュータブルデータモデルの基本原則です。
 
-現在の日時属性: SendDateTime (TIMESTAMP)
+現在の日時属性: send_date_time (TIMESTAMP)
 
 参考: templates/immutable-model-rules.md の「イベントの日時属性に関するルール」
 ```
@@ -605,11 +605,11 @@ Customer（顧客）の属性をどう修正しますか？
 ```
 修正する属性を選択してください:
 
-1. 顧客ID (CustomerID) - INT - 主キー
-2. 顧客名 (Name) - VARCHAR(100)
-3. 住所 (Address) - VARCHAR(255)
-4. 電話番号 (Phone) - VARCHAR(20)
-5. 作成日時 (CreatedAt) - TIMESTAMP
+1. 顧客ID (customer_id) - INT - 主キー
+2. 顧客名 (name) - VARCHAR(100)
+3. 住所 (address) - VARCHAR(255)
+4. 電話番号 (phone) - VARCHAR(20)
+5. 作成日時 (created_at) - TIMESTAMP
 
 番号を入力してください:
 
@@ -629,7 +629,7 @@ Customer（顧客）の属性をどう修正しますか？
 
 [入力後]
 以下のように修正します:
-- 顧客名 (Name): VARCHAR(100) → VARCHAR(255)
+- 顧客名 (name): VARCHAR(100) → VARCHAR(255)
 
 修正してよろしいですか？（y/n）:
 ```
@@ -647,12 +647,12 @@ Customer（顧客）の属性をどう修正しますか？
 
 | 属性名（日本語） | 属性名（英語） | 型 | 主キー | 備考 |
 |---------------|--------------|-----|--------|------|
-| 顧客ID | CustomerID | INT | ✓ | |
-| 顧客名 | Name | VARCHAR(255) | | ← 修正 |
-| 住所 | Address | VARCHAR(255) | | |
-| 電話番号 | Phone | VARCHAR(20) | | |
+| 顧客ID | customer_id | INT | ✓ | |
+| 顧客名 | name | VARCHAR(255) | | ← 修正 |
+| 住所 | address | VARCHAR(255) | | |
+| 電話番号 | phone | VARCHAR(20) | | |
 | メールアドレス | Email | VARCHAR(100) | | ← 追加 |
-| 作成日時 | CreatedAt | TIMESTAMP | | |
+| 作成日時 | created_at | TIMESTAMP | | |
 
 引き続き他のエンティティを修正しますか？（y/n）:
 ```
@@ -701,17 +701,17 @@ Customer（顧客）の属性をどう修正しますか？
 - 説明: 開発種別のマスターデータ（新規開発、保守開発など）
 
 自動生成される属性（★自動生成）:
-  1. DevelopmentTypeID (INT, 主キー) ★
-  2. DevelopmentTypeName (VARCHAR(100)) ★
-  3. CreatedAt (TIMESTAMP) ★
+  1. development_type_id (INT, 主キー) ★
+  2. development_type_name (VARCHAR(100)) ★
+  3. created_at (TIMESTAMP) ★
 
 追加の属性を定義しますか？（y/n）:
 ```
 
 **自動生成ルール:**
 1. **主キー**: `{EntityName}ID` (INT, 主キー)
-2. **Name属性**: `{EntityName}Name` (VARCHAR(100))
-3. **作成日時**: `CreatedAt` (TIMESTAMP)
+2. **name属性**: `{entity_name}_name` (VARCHAR(100))
+3. **作成日時**: `created_at` (TIMESTAMP)
 
 **追加属性の定義（yを選択した場合）:**
 
@@ -722,7 +722,7 @@ Customer（顧客）の属性をどう修正しますか？
 > 説明
 
 属性名（英語）:
-> Description
+> description
 
 型（例: INT, VARCHAR(100), TEXT, TIMESTAMP）:
 > TEXT
@@ -743,10 +743,10 @@ Customer（顧客）の属性をどう修正しますか？
 
 | 属性名（日本語） | 属性名（英語） | 型 | 主キー | 自動生成 |
 |---------------|--------------|-----|--------|---------|
-| 開発種別ID | DevelopmentTypeID | INT | ✓ | ★ |
-| 開発種別名 | DevelopmentTypeName | VARCHAR(100) | | ★ |
-| 説明 | Description | TEXT | | |
-| 作成日時 | CreatedAt | TIMESTAMP | | ★ |
+| 開発種別ID | development_type_id | INT | ✓ | ★ |
+| 開発種別名 | development_type_name | VARCHAR(100) | | ★ |
+| 説明 | description | TEXT | | |
+| 作成日時 | created_at | TIMESTAMP | | ★ |
 
 **説明**: 開発種別のマスターデータ（新規開発、保守開発など）
 
@@ -779,24 +779,24 @@ Customer（顧客）の属性をどう修正しますか？
 > 開始日時
 
 日時属性名（英語）:
-> StartDateTime
+> start_date_time
 
 [確認画面]
 以下のイベントエンティティを追加します:
 - 日本語名: プロジェクト開始
 - 英語名: ProjectStart
 - 説明: プロジェクトが正式に発足した事実
-- 日時属性: StartDateTime (TIMESTAMP)
+- 日時属性: start_date_time (TIMESTAMP)
 
 自動生成される属性（★自動生成）:
-  1. EventID (INT, 主キー) ★
-  2. StartDateTime (TIMESTAMP) ← 日時属性
+  1. event_id (INT, 主キー) ★
+  2. start_date_time (TIMESTAMP) ← 日時属性
 
 追加の属性を定義しますか？（y/n）:
 ```
 
 **自動生成ルール（イベント）:**
-1. **主キー**: `EventID` (INT, 主キー) - イベントは汎用的なEventIDを使用
+1. **主キー**: `event_id` (INT, 主キー) - イベントは汎用的なevent_idを使用
 2. **日時属性**: ユーザー指定の名前 (TIMESTAMP)
 
 **追加属性の定義（yを選択した場合）:**
@@ -808,7 +808,7 @@ Customer（顧客）の属性をどう修正しますか？
 > プロジェクトID
 
 属性名（英語）:
-> ProjectID
+> project_id
 
 型:
 > INT
@@ -823,7 +823,7 @@ Customer（顧客）の属性をどう修正しますか？
 > 登録者
 
 属性名（英語）:
-> RegisteredBy
+> registered_by
 
 型:
 > INT
@@ -841,14 +841,14 @@ Customer（顧客）の属性をどう修正しますか？
 以下の内容でイベントエンティティを追加します:
 
 ### ProjectStart（プロジェクト開始）
-**日時属性**: StartDateTime (TIMESTAMP)
+**日時属性**: start_date_time (TIMESTAMP)
 
 | 属性名（日本語） | 属性名（英語） | 型 | 主キー | 自動生成 |
 |---------------|--------------|-----|--------|---------|
-| イベントID | EventID | INT | ✓ | ★ |
-| プロジェクトID | ProjectID | INT | | |
-| 開始日時 | StartDateTime | TIMESTAMP | | (日時属性) |
-| 登録者 | RegisteredBy | INT | | |
+| イベントID | event_id | INT | ✓ | ★ |
+| プロジェクトID | project_id | INT | | |
+| 開始日時 | start_date_time | TIMESTAMP | | (日時属性) |
+| 登録者 | registered_by | INT | | |
 
 **説明**: プロジェクトが正式に発足した事実
 
@@ -897,25 +897,25 @@ Customer（顧客）の属性をどう修正しますか？
       "attributes": [
         {
           "japanese": "開発種別ID",
-          "english": "DevelopmentTypeID",
+          "english": "development_type_id",
           "type": "INT",
           "is_primary_key": true
         },
         {
           "japanese": "開発種別名",
-          "english": "DevelopmentTypeName",
+          "english": "development_type_name",
           "type": "VARCHAR(100)",
           "is_primary_key": false
         },
         {
           "japanese": "説明",
-          "english": "Description",
+          "english": "description",
           "type": "TEXT",
           "is_primary_key": false
         },
         {
           "japanese": "作成日時",
-          "english": "CreatedAt",
+          "english": "created_at",
           "type": "TIMESTAMP",
           "is_primary_key": false
         }
@@ -935,31 +935,31 @@ Customer（顧客）の属性をどう修正しますか？
       "english": "ProjectStart",
       "datetime_attribute": {
         "japanese": "開始日時",
-        "english": "StartDateTime",
+        "english": "start_date_time",
         "type": "TIMESTAMP"
       },
       "attributes": [
         {
           "japanese": "イベントID",
-          "english": "EventID",
+          "english": "event_id",
           "type": "INT",
           "is_primary_key": true
         },
         {
           "japanese": "プロジェクトID",
-          "english": "ProjectID",
+          "english": "project_id",
           "type": "INT",
           "is_primary_key": false
         },
         {
           "japanese": "開始日時",
-          "english": "StartDateTime",
+          "english": "start_date_time",
           "type": "TIMESTAMP",
           "is_primary_key": false
         },
         {
           "japanese": "登録者",
-          "english": "RegisteredBy",
+          "english": "registered_by",
           "type": "INT",
           "is_primary_key": false
         }
@@ -1007,7 +1007,7 @@ Customer（顧客）の属性をどう修正しますか？
 ```
 [外部キー参照チェック実行中...]
 
-以下のエンティティに "DevelopmentTypeID" 属性が見つかりました:
+以下のエンティティに "development_type_id" 属性が見つかりました:
 - Project（プロジェクト）
 - PROJECT_DEVELOPMENT_TYPE（ジャンクションテーブル）
 ```
@@ -1023,8 +1023,8 @@ Customer（顧客）の属性をどう修正しますか？
 【警告】この操作は取り消せません。
 
 このエンティティは他のエンティティから参照されている可能性があります:
-- Project エンティティに DevelopmentTypeID 属性があります
-- PROJECT_DEVELOPMENT_TYPE エンティティに DevelopmentTypeID 属性があります
+- Project エンティティに development_type_id 属性があります
+- PROJECT_DEVELOPMENT_TYPE エンティティに development_type_id 属性があります
 
 削除すると、Phase 3（関連分析）でこの関係が失われます。
 また、Phase 6（DDL生成）で外部キー制約エラーが発生する可能性があります。
@@ -1097,13 +1097,13 @@ entities_classified.json から削除されました。
     {
       "datetime_attribute": {
         "japanese": "送付日時",
-        "english": "SendDateTime",
+        "english": "send_date_time",
         "type": "TIMESTAMP"
       },
       "attributes": [
         {
           "japanese": "送付日時",  // ← datetime_attributeと重複
-          "english": "SendDateTime",
+          "english": "send_date_time",
           "type": "TIMESTAMP"
         }
       ]
@@ -1121,7 +1121,7 @@ entities_classified.json から削除されました。
 **警告メッセージ例:**
 
 ```
-[警告] イベントには既に日時属性「SendDateTime」があります。
+[警告] イベントには既に日時属性「send_date_time」があります。
 イベントには1つの日時属性のみを持たせる必要があります。
 複数の日時が必要な場合は、イベントを分割してください。
 
@@ -1210,9 +1210,9 @@ completed_phases:
 
 推奨される命名規則:
   - エンティティ名: PascalCase（例: Customer, InvoiceSend）
-  - 属性名: PascalCase（例: CustomerID, SendDateTime）
+  - 属性名: PascalCase（例: customer_id, send_date_time）
 
-推奨される名前: "CustomerID"
+推奨される名前: "customer_id"
 
 このまま続けますか？（y/n）:
 ```
@@ -1222,7 +1222,7 @@ completed_phases:
 **検出ロジック:** `{エンティティ名}ID` 形式をチェック
 
 ```
-[警告] この属性は外部キーの可能性があります: "CustomerID"
+[警告] この属性は外部キーの可能性があります: "customer_id"
 
 推測される参照先エンティティ: Customer
 
@@ -1274,7 +1274,7 @@ completed_phases:
 
 **外部キーの決定:**
 - 参照先のテーブルの主キー名をそのまま使用
-- 例: `Customer.CustomerID` → `InvoiceSend.CustomerID`
+- 例: `Customer.customer_id` → `InvoiceSend.customer_id`
 
 **参考資料:**
 - `templates/immutable-model-rules.md` の「交差エンティティの導入」セクション
@@ -1299,9 +1299,9 @@ Phase 3の関連分析中に、**不足している可能性のあるエンテ�
 **検出例:**
 
 ```
-Invoice エンティティに CustomerID 属性がありますが、Customer エンティティが存在しません。
-Project エンティティに IndustryID 属性がありますが、Industry エンティティが存在しません。
-Customer エンティティに IndustryID 属性がありますが、Industry エンティティが存在しません。
+Invoice エンティティに customer_id 属性がありますが、Customer エンティティが存在しません。
+Project エンティティに industry_id 属性がありますが、Industry エンティティが存在しません。
+Customer エンティティに industry_id 属性がありますが、Industry エンティティが存在しません。
 ```
 
 **2. 推測されるエンティティ種別**
@@ -1310,11 +1310,11 @@ Customer エンティティに IndustryID 属性がありますが、Industry �
 
 | 属性名パターン | 推測される種別 | 理由 |
 |-------------|--------------|------|
-| CustomerID | リソース | 顧客は継続的に存在する主体 |
-| IndustryID | リソース | 業界は分類マスターデータ |
-| DevelopmentTypeID | リソース | 開発種別は分類マスターデータ |
-| PaymentID | イベント | 入金は特定時点の事実 |
-| OrderID | イベントまたはリソース | ユースケース次第で判断 |
+| customer_id | リソース | 顧客は継続的に存在する主体 |
+| industry_id | リソース | 業界は分類マスターデータ |
+| development_type_id | リソース | 開発種別は分類マスターデータ |
+| payment_id | イベント | 入金は特定時点の事実 |
+| order_id | イベントまたはリソース | ユースケース次第で判断 |
 
 **判定ルール:**
 - 名詞が「種別」「タイプ」「分類」「業界」「カテゴリ」の場合 → リソース（マスターデータ）
@@ -1331,29 +1331,29 @@ Customer エンティティに IndustryID 属性がありますが、Industry �
 関連分析の結果、以下のエンティティが不足している可能性があります:
 
 1. Customer（顧客）
-   - 理由: Invoice に CustomerID 属性がありますが、Customer エンティティが存在しません
+   - 理由: Invoice に customer_id 属性がありますが、Customer エンティティが存在しません
    - 推奨種別: リソース
    - 推奨属性:
-     - CustomerID (INT, 主キー)
+     - customer_id (INT, 主キー)
      - CustomerName (VARCHAR(100))
-     - CreatedAt (TIMESTAMP)
+     - created_at (TIMESTAMP)
 
 2. Industry（業界）
-   - 理由: Customer に IndustryID 属性がありますが、Industry エンティティが存在しません
+   - 理由: Customer に industry_id 属性がありますが、Industry エンティティが存在しません
    - 推奨種別: リソース
    - 推奨属性:
-     - IndustryID (INT, 主キー)
+     - industry_id (INT, 主キー)
      - IndustryName (VARCHAR(100))
-     - CreatedAt (TIMESTAMP)
+     - created_at (TIMESTAMP)
 
 3. Payment（入金）
-   - 理由: Invoice に PaymentID 属性がありますが、Payment エンティティが存在しません
+   - 理由: Invoice に payment_id 属性がありますが、Payment エンティティが存在しません
    - 推奨種別: イベント（入金は特定時点の事実）
    - 推奨属性:
-     - EventID (INT, 主キー)
-     - PaymentDateTime (TIMESTAMP, 日時属性)
-     - InvoiceID (INT)
-     - Amount (DECIMAL(10,2))
+     - event_id (INT, 主キー)
+     - payment_date_time (TIMESTAMP, 日時属性)
+     - invoice_id (INT)
+     - amount (DECIMAL(10,2))
 
 次のアクションを選択してください:
 
@@ -1371,7 +1371,7 @@ Customer エンティティに IndustryID 属性がありますが、Industry �
 [警告] 不足エンティティを無視して進みます。
 
 以下の影響があります:
-- CustomerID、IndustryID、PaymentID の外部キー制約が作成されません
+- customer_id、industry_id、payment_id の外部キー制約が作成されません
 - Phase 6（DDL生成）でこれらの属性は通常のINT型として扱われます
 - 参照整合性チェックが行われません
 
@@ -1396,10 +1396,10 @@ phase_iterations:
 missing_entities_suggestions:  # 検出された不足エンティティを記録
   - name: Customer
     type: resource
-    reason: "Invoice に CustomerID 属性がありますが、Customer エンティティが存在しません"
+    reason: "Invoice に customer_id 属性がありますが、Customer エンティティが存在しません"
   - name: Industry
     type: resource
-    reason: "Customer に IndustryID 属性がありますが、Industry エンティティが存在しません"
+    reason: "Customer に industry_id 属性がありますが、Industry エンティティが存在しません"
 ```
 
 **2. Phase 2.5の再開:**
@@ -1489,8 +1489,8 @@ phase_3_analysis:
       "from": "Customer",
       "to": "InvoiceSend",
       "cardinality": "1:N",
-      "from_attribute": "CustomerID",
-      "to_attribute": "CustomerID",
+      "from_attribute": "customer_id",
+      "to_attribute": "customer_id",
       "relationship_type": "sends"
     }
   ]
@@ -1555,7 +1555,7 @@ completed_phases:
   "warnings": [
     {
       "entity": "Customer",
-      "message": "リソースに 'UpdatedAt' 属性があります。隠れたイベントがないか確認してください。"
+      "message": "リソースに 'updated_at' 属性があります。隠れたイベントがないか確認してください。"
     }
   ],
   "suggestions": [
@@ -1614,17 +1614,17 @@ Mermaid ER図の形式で出力してください。
 erDiagram
     CUSTOMER ||--o{ INVOICE_SEND : "sends"
     CUSTOMER {
-        int CustomerID PK
-        varchar Name
-        varchar Address
-        varchar Phone
-        timestamp CreatedAt
+        int customer_id PK
+        varchar name
+        varchar address
+        varchar phone
+        timestamp created_at
     }
     INVOICE_SEND {
-        int EventID PK
-        int CustomerID FK
-        timestamp SendDateTime
-        varchar SendMethod
+        int event_id PK
+        int customer_id FK
+        timestamp send_date_time
+        varchar send_method
     }
 ```
 
@@ -1699,45 +1699,45 @@ PostgreSQL DDLの生成ルール:
 -- リソーステーブル
 
 CREATE TABLE CUSTOMER (
-    CustomerID INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    Name VARCHAR(100) NOT NULL,
-    Address VARCHAR(255),
-    Phone VARCHAR(20),
-    CreatedAt TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+    customer_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    address VARCHAR(255),
+    phone VARCHAR(20),
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
 COMMENT ON TABLE CUSTOMER IS '顧客';
-COMMENT ON COLUMN CUSTOMER.CustomerID IS '顧客ID';
-COMMENT ON COLUMN CUSTOMER.Name IS '顧客名';
-COMMENT ON COLUMN CUSTOMER.Address IS '住所';
-COMMENT ON COLUMN CUSTOMER.Phone IS '電話番号';
-COMMENT ON COLUMN CUSTOMER.CreatedAt IS '作成日時';
+COMMENT ON COLUMN CUSTOMER.customer_id IS '顧客ID';
+COMMENT ON COLUMN CUSTOMER.name IS '顧客名';
+COMMENT ON COLUMN CUSTOMER.address IS '住所';
+COMMENT ON COLUMN CUSTOMER.phone IS '電話番号';
+COMMENT ON COLUMN CUSTOMER.created_at IS '作成日時';
 
 -- イベントテーブル
 
 CREATE TABLE INVOICE_SEND (
-    EventID INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    InvoiceID INTEGER NOT NULL,
-    CustomerID INTEGER NOT NULL,
-    SendDateTime TIMESTAMP WITH TIME ZONE NOT NULL,
-    SendMethod VARCHAR(50),
-    CONSTRAINT FK_INVOICE_SEND_INVOICE FOREIGN KEY (InvoiceID)
-        REFERENCES INVOICE(InvoiceID) ON DELETE RESTRICT,
-    CONSTRAINT FK_INVOICE_SEND_CUSTOMER FOREIGN KEY (CustomerID)
-        REFERENCES CUSTOMER(CustomerID) ON DELETE RESTRICT
+    event_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    invoice_id INTEGER NOT NULL,
+    customer_id INTEGER NOT NULL,
+    send_date_time TIMESTAMP WITH TIME ZONE NOT NULL,
+    send_method VARCHAR(50),
+    CONSTRAINT fk_invoice_send_invoice FOREIGN KEY (invoice_id)
+        REFERENCES INVOICE(invoice_id) ON DELETE RESTRICT,
+    CONSTRAINT fk_invoice_send_customer FOREIGN KEY (customer_id)
+        REFERENCES CUSTOMER(customer_id) ON DELETE RESTRICT
 );
 
 COMMENT ON TABLE INVOICE_SEND IS '請求書送付';
-COMMENT ON COLUMN INVOICE_SEND.EventID IS 'イベントID';
-COMMENT ON COLUMN INVOICE_SEND.InvoiceID IS '請求書ID';
-COMMENT ON COLUMN INVOICE_SEND.CustomerID IS '顧客ID';
-COMMENT ON COLUMN INVOICE_SEND.SendDateTime IS '送付日時';
-COMMENT ON COLUMN INVOICE_SEND.SendMethod IS '送付方法';
+COMMENT ON COLUMN INVOICE_SEND.event_id IS 'イベントID';
+COMMENT ON COLUMN INVOICE_SEND.invoice_id IS '請求書ID';
+COMMENT ON COLUMN INVOICE_SEND.customer_id IS '顧客ID';
+COMMENT ON COLUMN INVOICE_SEND.send_date_time IS '送付日時';
+COMMENT ON COLUMN INVOICE_SEND.send_method IS '送付方法';
 
 -- インデックス（パフォーマンス最適化）
-CREATE INDEX IDX_INVOICE_SEND_CUSTOMER ON INVOICE_SEND(CustomerID);
-CREATE INDEX IDX_INVOICE_SEND_INVOICE ON INVOICE_SEND(InvoiceID);
-CREATE INDEX IDX_INVOICE_SEND_DATETIME ON INVOICE_SEND(SendDateTime);
+CREATE INDEX idx_invoice_send_customer ON INVOICE_SEND(customer_id);
+CREATE INDEX idx_invoice_send_invoice ON INVOICE_SEND(invoice_id);
+CREATE INDEX idx_invoice_send_datetime ON INVOICE_SEND(send_date_time);
 ```
 
 **重要なポイント:**
@@ -1840,7 +1840,7 @@ completed_phases:
   "instance": "/api/projects",
   "errors": [
     {
-      "field": "projectName",
+      "field": "project_name",
       "message": "1-200文字で入力してください",
       "value": ""
     }
@@ -1852,11 +1852,11 @@ completed_phases:
 - エンティティ属性から自動的にクエリパラメータを生成
 
 **自動生成されるパラメータ:**
-- String属性 → 部分一致検索（`?projectName=keyword`）
-- 外部キー属性 → 完全一致フィルタ（`?customerID=123`）
-- Date属性 → 範囲検索（`?plannedStartDateFrom=2024-01-01&plannedStartDateTo=2024-12-31`）
+- String属性 → 部分一致検索（`?project_name=keyword`）
+- 外部キー属性 → 完全一致フィルタ（`?customer_id=123`）
+- Date属性 → 範囲検索（`?planned_start_dateFrom=2024-01-01&planned_start_dateTo=2024-12-31`）
 - ページング → `?limit=50&offset=0`
-- ソート → `?sort=projectName` または `?sort=-projectName`（降順）
+- ソート → `?sort=project_name` または `?sort=-project_name`（降順）
 
 **実行方法:**
 
@@ -1945,12 +1945,12 @@ paths:
       tags:
         - Projects
       parameters:
-        - name: projectName
+        - name: project_name
           in: query
           schema:
             type: string
           description: プロジェクト名（部分一致）
-        - name: customerID
+        - name: customer_id
           in: query
           schema:
             type: integer
@@ -1998,12 +1998,12 @@ paths:
         ```sql
         SELECT pa.*, p.*
         FROM PERSON_ASSIGN pa
-        JOIN PERSON p ON pa.PersonID = p.PersonID
-        WHERE pa.ProjectID = ?
+        JOIN PERSON p ON pa.person_id = p.person_id
+        WHERE pa.project_id = ?
           AND NOT EXISTS (
             SELECT 1 FROM PERSON_REPLACE pr
-            WHERE pr.ProjectID = pa.ProjectID
-              AND pr.OldPersonID = pa.PersonID
+            WHERE pr.project_id = pa.project_id
+              AND pr.old_person_id = pa.person_id
           );
         ```
       operationId: getProjectCurrentMembers
@@ -2024,9 +2024,9 @@ paths:
               schema:
                 type: object
                 properties:
-                  projectID:
+                  project_id:
                     type: integer
-                  currentMembers:
+                  current_members:
                     type: array
                     items:
                       $ref: '#/components/schemas/PersonAssign'
@@ -2036,24 +2036,24 @@ components:
     Project:
       type: object
       required:
-        - projectID
-        - projectName
+        - project_id
+        - project_name
       properties:
-        projectID:
+        project_id:
           type: integer
           description: プロジェクトID
-        projectName:
+        project_name:
           type: string
           maxLength: 200
           description: プロジェクト名
-        customerID:
+        customer_id:
           type: integer
           description: 顧客ID
-        plannedStartDate:
+        planned_start_date:
           type: string
           format: date
           description: 予定開始日
-        contractAmount:
+        contract_amount:
           type: number
           description: 契約金額
       description: プロジェクト
@@ -2061,16 +2061,16 @@ components:
     ProjectStartCommand:
       type: object
       required:
-        - startDateTime
-        - registeredBy
+        - start_date_time
+        - registered_by
       properties:
-        startDateTime:
+        start_date_time:
           type: string
           format: date-time
           description: 開始日時
-        registeredBy:
+        registered_by:
           type: integer
-          description: 登録者のPersonID
+          description: 登録者のperson_id
 
     ProblemDetails:
       type: object

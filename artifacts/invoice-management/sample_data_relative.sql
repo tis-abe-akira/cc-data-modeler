@@ -9,13 +9,13 @@
 -- ================================================
 
 -- 顧客データ（3社）
-INSERT INTO CUSTOMER (Name, Address, Phone, CreatedAt) VALUES
+INSERT INTO CUSTOMER (name, address, phone, created_at) VALUES
 ('株式会社ABC商事', '東京都渋谷区渋谷1-1-1', '03-1111-1111', CURRENT_TIMESTAMP - INTERVAL '365 days'),
 ('XYZ株式会社', '大阪府大阪市北区梅田2-2-2', '06-2222-2222', CURRENT_TIMESTAMP - INTERVAL '360 days'),
 ('サンプル工業株式会社', '神奈川県横浜市西区みなとみらい3-3-3', '045-3333-3333', CURRENT_TIMESTAMP - INTERVAL '340 days');
 
 -- 請求書データ（5件）
-INSERT INTO INVOICE (CustomerID, InvoiceNumber, IssueDate, Amount, DueDate) VALUES
+INSERT INTO INVOICE (customer_id, invoice_number, issue_date, amount, due_date) VALUES
 -- 請求書1: 正常支払い済み（60日前発行、30日前期日、すでに支払い済み）
 (1, 'INV-DEMO-0001', CURRENT_DATE - INTERVAL '60 days', 100000.00, CURRENT_DATE - INTERVAL '30 days'),
 
@@ -36,46 +36,46 @@ INSERT INTO INVOICE (CustomerID, InvoiceNumber, IssueDate, Amount, DueDate) VALU
 -- ================================================
 
 -- シナリオ1: 顧客1（ABC商事）の請求書1 → 正常に支払い完了
-INSERT INTO INVOICE_SEND (InvoiceID, CustomerID, SendDateTime, SendMethod) VALUES
+INSERT INTO INVOICE_SEND (invoice_id, customer_id, send_date_time, send_method) VALUES
 (1, 1, CURRENT_TIMESTAMP - INTERVAL '60 days', 'メール');
 
-INSERT INTO PAYMENT (InvoiceID, CustomerID, PaymentDateTime, PaymentAmount, PaymentMethod) VALUES
+INSERT INTO PAYMENT (invoice_id, customer_id, payment_date_time, payment_amount, payment_method) VALUES
 (1, 1, CURRENT_TIMESTAMP - INTERVAL '35 days', 100000.00, '銀行振込');
 
 -- シナリオ2: 顧客1（ABC商事）の請求書2 → 期日超過 → 確認状送付 → 遅延入金
-INSERT INTO INVOICE_SEND (InvoiceID, CustomerID, SendDateTime, SendMethod) VALUES
+INSERT INTO INVOICE_SEND (invoice_id, customer_id, send_date_time, send_method) VALUES
 (2, 1, CURRENT_TIMESTAMP - INTERVAL '90 days', 'メール');
 
 -- 期日超過後に確認状送付
-INSERT INTO CONFIRMATION_SEND (InvoiceID, CustomerID, SendDateTime, SendMethod) VALUES
+INSERT INTO CONFIRMATION_SEND (invoice_id, customer_id, send_date_time, send_method) VALUES
 (2, 1, CURRENT_TIMESTAMP - INTERVAL '53 days', 'メール');
 
 -- 確認状後に入金
-INSERT INTO PAYMENT (InvoiceID, CustomerID, PaymentDateTime, PaymentAmount, PaymentMethod) VALUES
+INSERT INTO PAYMENT (invoice_id, customer_id, payment_date_time, payment_amount, payment_method) VALUES
 (2, 1, CURRENT_TIMESTAMP - INTERVAL '50 days', 150000.00, '銀行振込');
 
 -- シナリオ3: 顧客2（XYZ株式会社）の請求書3 → 分割払い（2回に分けて入金）
-INSERT INTO INVOICE_SEND (InvoiceID, CustomerID, SendDateTime, SendMethod) VALUES
+INSERT INTO INVOICE_SEND (invoice_id, customer_id, send_date_time, send_method) VALUES
 (3, 2, CURRENT_TIMESTAMP - INTERVAL '75 days', 'メール');
 
 -- 1回目の入金（半額、期日前）
-INSERT INTO PAYMENT (InvoiceID, CustomerID, PaymentDateTime, PaymentAmount, PaymentMethod) VALUES
+INSERT INTO PAYMENT (invoice_id, customer_id, payment_date_time, payment_amount, payment_method) VALUES
 (3, 2, CURRENT_TIMESTAMP - INTERVAL '50 days', 100000.00, '銀行振込');
 
 -- 2回目の入金（残額、期日前）
-INSERT INTO PAYMENT (InvoiceID, CustomerID, PaymentDateTime, PaymentAmount, PaymentMethod) VALUES
+INSERT INTO PAYMENT (invoice_id, customer_id, payment_date_time, payment_amount, payment_method) VALUES
 (3, 2, CURRENT_TIMESTAMP - INTERVAL '40 days', 100000.00, '銀行振込');
 
 -- シナリオ4: 顧客2（XYZ株式会社）の請求書4 → 期日超過 → 督促済み → まだ未入金
-INSERT INTO INVOICE_SEND (InvoiceID, CustomerID, SendDateTime, SendMethod) VALUES
+INSERT INTO INVOICE_SEND (invoice_id, customer_id, send_date_time, send_method) VALUES
 (4, 2, CURRENT_TIMESTAMP - INTERVAL '50 days', 'メール');
 
 -- 期日超過後に確認状送付
-INSERT INTO CONFIRMATION_SEND (InvoiceID, CustomerID, SendDateTime, SendMethod) VALUES
+INSERT INTO CONFIRMATION_SEND (invoice_id, customer_id, send_date_time, send_method) VALUES
 (4, 2, CURRENT_TIMESTAMP - INTERVAL '17 days', 'メール');
 
 -- シナリオ5: 顧客3（サンプル工業）の請求書5 → 送付済み → まだ期日前
-INSERT INTO INVOICE_SEND (InvoiceID, CustomerID, SendDateTime, SendMethod) VALUES
+INSERT INTO INVOICE_SEND (invoice_id, customer_id, send_date_time, send_method) VALUES
 (5, 3, CURRENT_TIMESTAMP - INTERVAL '10 days', 'メール');
 
 -- まだ期日前なので入金イベントなし
