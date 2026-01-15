@@ -6,19 +6,38 @@
 - イベントテーブル: アクション_対象形式（例: `PROJECT_START`, `INVOICE_SEND`）
 - ジャンクションテーブル: エンティティ1_エンティティ2形式（例: `PROJECT_DEVELOPMENT_TYPE`）
 
+## カラム命名規則
+
+**重要: カラム名はすべて小文字のsnake_caseを使用**
+
+- 主キー: `{テーブル名}_id`（例: `project_id`, `customer_id`）
+- 外部キー: 参照先の主キー名と同じ（例: `customer_id`）
+- 一般カラム: 小文字snake_case（例: `project_name`, `created_at`）
+
+### CamelCase → snake_case 変換ルール
+
+| モデル定義（CamelCase） | DDLカラム名（snake_case） |
+|------------------------|--------------------------|
+| ProjectID | project_id |
+| ProjectName | project_name |
+| CustomerID | customer_id |
+| CreatedAt | created_at |
+| StartDateTime | start_date_time |
+| ParentOrganizationID | parent_organization_id |
+
 ## 主キー
 
 すべてのテーブルに主キーを設定：
 
 ### リソース・イベントテーブル
 ```sql
-ResourceID INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY
-EventID INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY
+resource_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY
+event_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY
 ```
 
 ### ジャンクションテーブル
 ```sql
-PRIMARY KEY (ProjectID, DevelopmentTypeID)
+PRIMARY KEY (project_id, development_type_id)
 ```
 
 ## 外部キー制約
@@ -26,11 +45,11 @@ PRIMARY KEY (ProjectID, DevelopmentTypeID)
 必ず外部キー制約を設定：
 
 ```sql
-CONSTRAINT FK_PROJECT_CUSTOMER FOREIGN KEY (CustomerID)
-    REFERENCES CUSTOMER(CustomerID) ON DELETE RESTRICT
+CONSTRAINT fk_project_customer FOREIGN KEY (customer_id)
+    REFERENCES CUSTOMER(customer_id) ON DELETE RESTRICT
 ```
 
-- 命名: `FK_{テーブル名}_{参照先または列名}`
+- 命名: `fk_{テーブル名}_{参照先または列名}`（小文字）
 - 削除時動作: `ON DELETE RESTRICT`（デフォルト、データ整合性を保護）
 
 ## データ型
@@ -48,14 +67,14 @@ CONSTRAINT FK_PROJECT_CUSTOMER FOREIGN KEY (CustomerID)
 イベントの日時属性は必ず `TIMESTAMP WITH TIME ZONE` を使用：
 
 ```sql
-EventDateTime TIMESTAMP WITH TIME ZONE NOT NULL
+event_date_time TIMESTAMP WITH TIME ZONE NOT NULL
 ```
 
 ### デフォルト値
 作成日時には現在時刻をデフォルト設定：
 
 ```sql
-CreatedAt TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 ```
 
 ## コメント
@@ -64,8 +83,8 @@ CreatedAt TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 
 ```sql
 COMMENT ON TABLE PROJECT IS 'プロジェクト';
-COMMENT ON COLUMN PROJECT.ProjectID IS 'プロジェクトID';
-COMMENT ON COLUMN PROJECT.ProjectName IS 'プロジェクト名';
+COMMENT ON COLUMN PROJECT.project_id IS 'プロジェクトID';
+COMMENT ON COLUMN PROJECT.project_name IS 'プロジェクト名';
 ```
 
 ## インデックス
@@ -79,13 +98,13 @@ COMMENT ON COLUMN PROJECT.ProjectName IS 'プロジェクト名';
 
 ### 命名規則
 ```sql
-IDX_{テーブル名}_{列名}
+idx_{テーブル名}_{列名}
 ```
 
 ### 例
 ```sql
-CREATE INDEX IDX_PROJECT_CUSTOMER ON PROJECT(CustomerID);
-CREATE INDEX IDX_PROJECT_START_DATETIME ON PROJECT_START(StartDateTime);
+CREATE INDEX idx_project_customer ON PROJECT(customer_id);
+CREATE INDEX idx_project_start_datetime ON PROJECT_START(start_date_time);
 ```
 
 ## DDL構造
@@ -131,13 +150,69 @@ PostgreSQLの予約語（USER等）は別名を使用：
 
 ```sql
 CREATE TABLE ORGANIZATION (
-    OrganizationID INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    ParentOrganizationID INTEGER,
+    organization_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    parent_organization_id INTEGER,
     -- 他の列...
 );
 
 -- 外部キー制約を後から追加
-ALTER TABLE ORGANIZATION ADD CONSTRAINT FK_ORGANIZATION_PARENT
-    FOREIGN KEY (ParentOrganizationID)
-    REFERENCES ORGANIZATION(OrganizationID) ON DELETE RESTRICT;
+ALTER TABLE ORGANIZATION ADD CONSTRAINT fk_organization_parent
+    FOREIGN KEY (parent_organization_id)
+    REFERENCES ORGANIZATION(organization_id) ON DELETE RESTRICT;
+```
+
+## 完全な例
+
+```sql
+-- ================================================
+-- リソーステーブル
+-- ================================================
+
+CREATE TABLE PROJECT (
+    project_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    project_name VARCHAR(200) NOT NULL,
+    customer_id INTEGER NOT NULL,
+    estimated_effort DECIMAL(10,2),
+    planned_start_date DATE,
+    planned_end_date DATE,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+COMMENT ON TABLE PROJECT IS 'プロジェクト';
+COMMENT ON COLUMN PROJECT.project_id IS 'プロジェクトID';
+COMMENT ON COLUMN PROJECT.project_name IS 'プロジェクト名';
+COMMENT ON COLUMN PROJECT.customer_id IS '顧客ID';
+COMMENT ON COLUMN PROJECT.estimated_effort IS '受注規模';
+COMMENT ON COLUMN PROJECT.planned_start_date IS '計画開始日';
+COMMENT ON COLUMN PROJECT.planned_end_date IS '計画終了日';
+COMMENT ON COLUMN PROJECT.created_at IS '作成日時';
+
+-- ================================================
+-- イベントテーブル
+-- ================================================
+
+CREATE TABLE PROJECT_START (
+    event_id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    project_id INTEGER NOT NULL,
+    start_date_time TIMESTAMP WITH TIME ZONE NOT NULL,
+    registered_by INTEGER NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_project_start_project FOREIGN KEY (project_id)
+        REFERENCES PROJECT(project_id) ON DELETE RESTRICT
+);
+
+COMMENT ON TABLE PROJECT_START IS 'プロジェクト開始';
+COMMENT ON COLUMN PROJECT_START.event_id IS 'イベントID';
+COMMENT ON COLUMN PROJECT_START.project_id IS 'プロジェクトID';
+COMMENT ON COLUMN PROJECT_START.start_date_time IS '開始日時';
+COMMENT ON COLUMN PROJECT_START.registered_by IS '登録者';
+COMMENT ON COLUMN PROJECT_START.created_at IS '作成日時';
+
+-- ================================================
+-- インデックス
+-- ================================================
+
+CREATE INDEX idx_project_customer ON PROJECT(customer_id);
+CREATE INDEX idx_project_start_project ON PROJECT_START(project_id);
+CREATE INDEX idx_project_start_datetime ON PROJECT_START(start_date_time);
 ```

@@ -9,7 +9,7 @@
 - 略語は極力避ける（一般的なものを除く）
 - 一貫性を保つ
 
-## エンティティ名
+## エンティティ名（論理モデル）
 
 ### 形式
 
@@ -61,49 +61,47 @@
 - `Assignment` - 配属（Employee + Department）
 - `Membership` - 会員資格（User + Group）
 
-## テーブル名（RDBMS実装時）
+## テーブル名（DDL/RDBMS実装時）
 
 ### 形式
 
-- 大文字スネークケース（UPPER_SNAKE_CASE）
-- または小文字スネークケース（lower_snake_case）
-
-プロジェクトで統一すること。
+- **大文字スネークケース（UPPER_SNAKE_CASE）**
 
 ### 例
 
-**大文字スネークケース:**
 ```
 CUSTOMER
 INVOICE_SEND
 ORDER_DETAIL
 PAYMENT_MAKE
+PROJECT_START
+PERSON_ASSIGN
 ```
 
-**小文字スネークケース:**
-```
-customer
-invoice_send
-order_detail
-payment_make
-```
+## カラム名（DDL/RDBMS実装時）
 
-## カラム名（属性名）
+### 重要: 小文字snake_caseを使用
 
-### 形式
+DDL生成時、カラム名は**必ず小文字のsnake_case**を使用すること。
 
-- **英語**: PascalCaseまたはsnake_case
-- プロジェクトで統一
+| 論理モデル（PascalCase） | DDLカラム名（snake_case） |
+|------------------------|--------------------------|
+| CustomerID | customer_id |
+| ProjectName | project_name |
+| CreatedAt | created_at |
+| StartDateTime | start_date_time |
+| ParentOrganizationID | parent_organization_id |
 
 ### 主キー
 
-**形式**: `{エンティティ名}ID` または `{エンティティ名}_id`
+**形式**: `{テーブル名}_id`（小文字snake_case）
 
 **例:**
-```
-CustomerID または customer_id
-InvoiceID または invoice_id
-EventID または event_id
+```sql
+customer_id
+invoice_id
+event_id
+project_id
 ```
 
 ### 外部キー
@@ -122,179 +120,156 @@ customer_id (FK) ← 参照先の主キー名と同じ
 
 ### 日時属性
 
-**推奨形式**: `{イベント名}DateTime` または `{イベント名}_datetime`
+**形式**: `{意味}_date_time` または `{意味}_at`
 
 **イベントの場合（必須）:**
-```
-SendDateTime - 送付日時
-PaymentDateTime - 入金日時
-OrderDateTime - 注文日時
+```sql
+send_date_time     -- 送付日時
+payment_date_time  -- 入金日時
+order_date_time    -- 注文日時
+start_date_time    -- 開始日時
 ```
 
 **リソースの場合（システム用途）:**
-```
-CreatedAt - 作成日時
-UpdatedAt - 更新日時（※ビジネスイベントは別途定義すべき）
+```sql
+created_at   -- 作成日時
+updated_at   -- 更新日時（※ビジネスイベントは別途定義すべき）
 ```
 
 ### 金額・数量
 
 **金額:**
-```
-Amount - 金額
-TotalAmount - 合計金額
-UnitPrice - 単価
+```sql
+amount        -- 金額
+total_amount  -- 合計金額
+unit_price    -- 単価
 ```
 
 **数量:**
-```
-Quantity - 数量
-Count - 個数
+```sql
+quantity  -- 数量
+count     -- 個数
 ```
 
 ### フラグ・ステータス
 
 **フラグ（真偽値）:**
-```
-IsActive - アクティブか
-IsDeleted - 削除済みか（※イベントモデルでは非推奨）
-HasDiscount - 割引があるか
+```sql
+is_active     -- アクティブか
+is_deleted    -- 削除済みか（※イベントモデルでは非推奨）
+has_discount  -- 割引があるか
 ```
 
 **ステータス（列挙型）:**
-```
-Status - ステータス
-OrderStatus - 注文ステータス
-PaymentStatus - 支払いステータス
+```sql
+status          -- ステータス
+order_status    -- 注文ステータス
+payment_status  -- 支払いステータス
 ```
 
 ## よくある属性名の例
 
 ### 個人情報
 
-```
-Name / FullName - 氏名
-FirstName - 名
-LastName - 姓
-Email - メールアドレス
-Phone / PhoneNumber - 電話番号
-Address - 住所
-PostalCode / ZipCode - 郵便番号
-BirthDate - 生年月日
+```sql
+name / full_name  -- 氏名
+first_name        -- 名
+last_name         -- 姓
+email             -- メールアドレス
+phone / phone_number  -- 電話番号
+address           -- 住所
+postal_code / zip_code  -- 郵便番号
+birth_date        -- 生年月日
 ```
 
 ### 組織・場所
 
-```
-CompanyName - 会社名
-DepartmentName - 部署名
-OfficeName - 事業所名
-Location - 所在地
+```sql
+company_name      -- 会社名
+department_name   -- 部署名
+office_name       -- 事業所名
+location          -- 所在地
 ```
 
 ### 金銭・数値
 
-```
-Price - 価格
-Cost - 原価
-Amount - 金額
-Quantity - 数量
-Rate - 率（例: 税率、割引率）
-Percentage - パーセンテージ
+```sql
+price       -- 価格
+cost        -- 原価
+amount      -- 金額
+quantity    -- 数量
+rate        -- 率（例: 税率、割引率）
+percentage  -- パーセンテージ
 ```
 
 ### 日時
 
-```
-Date - 日付
-DateTime - 日時
-Time - 時刻
-StartDate / StartDateTime - 開始日時
-EndDate / EndDateTime - 終了日時
-CreatedAt - 作成日時
-UpdatedAt - 更新日時
+```sql
+date              -- 日付
+date_time         -- 日時
+time              -- 時刻
+start_date / start_date_time  -- 開始日時
+end_date / end_date_time      -- 終了日時
+created_at        -- 作成日時
+updated_at        -- 更新日時
 ```
 
 ### コード・ID
 
-```
-Code - コード
-Number - 番号（例: 注文番号、請求書番号）
-ID - 識別子
-EmployeeCode - 社員コード
-ProductCode - 商品コード
+```sql
+code           -- コード
+number         -- 番号（例: 注文番号、請求書番号）
+employee_code  -- 社員コード
+product_code   -- 商品コード
 ```
 
 ## 禁止事項
 
 ### ❌ 避けるべき命名
 
-1. **意味不明な略語**
-   - `cust`, `prod`, `emp` など
-   - 例外: 業界標準の略語（`URL`, `ID`等）
+1. **CamelCaseのカラム名（DDL生成時）**
+   - ❌ `CustomerID`, `ProjectName`, `CreatedAt`
+   - ✅ `customer_id`, `project_name`, `created_at`
 
-2. **数値での区別**
+2. **意味不明な略語**
+   - `cust`, `prod`, `emp` など
+   - 例外: 業界標準の略語（`url`, `id`等）
+
+3. **数値での区別**
    - `Product1`, `Product2`
    - `Event1`, `Event2`
 
-3. **型の接頭辞**
+4. **型の接頭辞**
    - `tbl_customer` (テーブルを表す接頭辞)
    - `int_customer_id` (型を表す接頭辞)
 
-4. **予約語**
+5. **予約語**
    - SQL予約語（`order`, `user`, `group`等）は避けるか、エスケープする
 
-5. **複数形**
+6. **複数形**
    - ❌ `Customers`
    - ✅ `Customer`
 
-## プロジェクト固有のカスタマイズ
-
-この部分は、各プロジェクトの要件に応じてカスタマイズしてください。
-
-### テーブル接頭辞（必要な場合）
+## DDL生成時のデフォルト設定
 
 ```yaml
-# 例: マイクロサービスで複数のスキーマを持つ場合
-service_prefix: "ord_"  # 注文サービス
-# → ord_customer, ord_invoice_send
-```
+# テーブル名
+table_naming_style: "UPPER_SNAKE_CASE"  # → CUSTOMER, PROJECT_START
 
-### カラムの命名規則
-
-```yaml
-# PascalCase または snake_case を選択
-column_naming_style: "snake_case"
+# カラム名（重要: 必ずsnake_case）
+column_naming_style: "snake_case"  # → customer_id, project_name
 
 # 主キーの命名
-primary_key_suffix: "_id"  # → customer_id
+primary_key_suffix: "_id"  # → customer_id, project_id
 
 # 外部キーの命名
 foreign_key_suffix: "_id"  # → customer_id
 
 # 日時カラムの命名
-datetime_suffix: "_at"  # → created_at, updated_at
-# または
-datetime_suffix: "_datetime"  # → send_datetime
-```
+datetime_suffix: "_at" または "_date_time"  # → created_at, start_date_time
 
-### 業界特有の用語
-
-プロジェクトで使用する業界特有の用語を定義
-
-```yaml
-# 例: 医療システム
-domain_terms:
-  - Patient: 患者
-  - Doctor: 医師
-  - Diagnosis: 診断
-  - Prescription: 処方
-
-# 例: ECシステム
-domain_terms:
-  - Cart: カート
-  - Checkout: チェックアウト
-  - Wishlist: ウィッシュリスト
+# 制約の命名
+constraint_style: "snake_case"  # → fk_project_customer, idx_project_customer
 ```
 
 ## チェックリスト
@@ -302,8 +277,9 @@ domain_terms:
 命名時に以下を確認：
 
 - [ ] エンティティ名は単数形
-- [ ] 英語名がPascalCase
-- [ ] 主キーは`{エンティティ名}ID`形式
+- [ ] 論理モデルの英語名がPascalCase
+- [ ] **DDLカラム名が小文字snake_case**
+- [ ] 主キーは`{テーブル名}_id`形式
 - [ ] 外部キーは参照先の主キー名と一致
 - [ ] イベントの日時属性が明確
 - [ ] 予約語を避けている
